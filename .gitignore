@@ -1,0 +1,27 @@
+# Secrets - never commit these
+.env
+.env.local
+.streamlit/secrets.toml
+*.key
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Audio test files
+*.mp3
+*.wav
+*.m4a
+*.mp4
+
+# Editor and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
