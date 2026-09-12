@@ -37,7 +37,7 @@ aai.settings.api_key = api_key
 st.sidebar.caption(f"Key loaded: {mask(api_key)}")
 
 use_fuzzy = st.sidebar.checkbox(
-    "Fuzzy matching for unseen spellings", value=True,
+    "Fuzzy matching for unseen spellings", value=False,
     help="Catches spellings the glossary has not seen. Turn off to compare.",
 )
 
