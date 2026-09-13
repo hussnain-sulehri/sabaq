@@ -1,5 +1,5 @@
 """
-Key loading for Sabaq.
+Key and setting loading for Sabaq.
 
 Order of lookup:
 1. Streamlit secrets  - used when deployed on Streamlit Cloud
@@ -16,8 +16,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def get_key(name: str) -> str | None:
-    """Return an API key by name, or None if it is not set anywhere."""
+def _lookup(name: str) -> str | None:
     try:
         value = st.secrets[name]
         if value:
@@ -27,6 +26,21 @@ def get_key(name: str) -> str | None:
 
     value = os.environ.get(name)
     return value.strip() if value else None
+
+
+def get_key(name: str) -> str | None:
+    """Return an API key by name, or None if it is not set anywhere."""
+    return _lookup(name)
+
+
+def get_setting(name: str, default: str) -> str:
+    """
+    Return a non-secret setting, falling back to a default.
+
+    Model names get retired. Keeping the name here means a change is a
+    config edit, not a code edit.
+    """
+    return _lookup(name) or default
 
 
 def mask(key: str) -> str:

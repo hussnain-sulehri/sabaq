@@ -1,5 +1,6 @@
 """
-Sabaq - Phase 3
+Sabaq - voice teaching assistant for classrooms that mix Urdu and English.
+
 Upload a lecture recording. Get a corrected transcript, a summary,
 key points, and practice questions.
 
@@ -9,16 +10,23 @@ Run:
 
 import os
 import tempfile
-
+import time
 import assemblyai as aai
 import streamlit as st
-
 from config import get_key, mask
 from normalizer import clean_transcript
-from teacher import TERM_STYLES, key_points, practice_questions, summarize
+from teacher import (
+    MODEL,
+    TERM_STYLES,
+    key_points,
+    practice_questions,
+    study_notes,
+    summarize,
+)
 
 MAX_MB = 25
 ALLOWED = ["mp3", "wav", "m4a", "mp4"]
+NOTE_KEYS = ("summary", "points", "questions")
 
 st.set_page_config(page_title="Sabaq", page_icon="🎓", layout="wide")
 st.title("Sabaq")
@@ -26,6 +34,7 @@ st.caption("Lecture notes for classrooms that mix Urdu and English")
 
 aai_key = get_key("ASSEMBLYAI_API_KEY")
 gemini_key = get_key("GEMINI_API_KEY")
+
 
 if not aai_key:
     st.error(
@@ -39,6 +48,8 @@ aai.settings.api_key = aai_key
 
 st.sidebar.caption(f"Speech key: {mask(aai_key)}")
 st.sidebar.caption(f"Notes key: {mask(gemini_key) if gemini_key else 'not set'}")
+st.sidebar.caption(f"Model: {MODEL}")
+st.sidebar.divider()
 
 use_fuzzy = st.sidebar.checkbox(
     "Fuzzy matching for unseen spellings",
@@ -47,11 +58,74 @@ use_fuzzy = st.sidebar.checkbox(
 )
 
 notes_language = st.sidebar.radio("Notes language", ["English", "Urdu"])
+
 term_style = st.sidebar.selectbox(
     "Technical terms",
     list(TERM_STYLES.keys()),
     help="How English technical terms should appear in the notes.",
 )
+
+
+def transcribe(file) -> tuple[str, int | None]:
+    """Send an uploaded file to AssemblyAI. Returns (text, duration_seconds)."""
+    audio_path = None
+    try:
+        suffix = os.path.splitext(file.name)[1]
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            tmp.write(file.getbuffer())
+            audio_path = tmp.name
+
+        config = aai.TranscriptionConfig(language_detection=True)
+        result = aai.Transcriber().transcribe(audio_path, config=config)
+
+        if result.status == aai.TranscriptStatus.error:
+            return "", None
+
+        return result.text or "", result.audio_duration
+
+    finally:
+        if audio_path and os.path.exists(audio_path):
+            os.remove(audio_path)
+
+
+def generate_notes(transcript: str) -> None:
+    """
+    One combined call, falling back to separate calls if it cannot be parsed.
+
+    Gemini's free tier limits requests per minute, so the combined call is
+    the normal path. The fallback spaces its three calls out to stay inside
+    the same limit.
+    """
+    with st.spinner("Reading the lecture..."):
+        notes = study_notes(gemini_key, transcript, notes_language, term_style)
+
+    if notes.get("summary"):
+        st.session_state["summary"] = notes["summary"]
+        st.session_state["points"] = notes["points"]
+        st.session_state["questions"] = notes["questions"]
+        return
+
+    st.info("Combined reply could not be read. Falling back to separate calls.")
+
+    steps = [
+        ("summary", "Writing summary",
+         lambda: summarize(gemini_key, transcript, notes_language, term_style)),
+        ("points", "Pulling key points",
+         lambda: key_points(gemini_key, transcript, notes_language, term_style)),
+        ("questions", "Writing questions",
+         lambda: practice_questions(gemini_key, transcript, 5, notes_language, term_style)),
+    ]
+
+    for index, (state_key, label, call) in enumerate(steps):
+        try:
+            with st.spinner(label):
+                st.session_state[state_key] = call()
+        except Exception:
+            st.warning(f"{label} failed. Press the button again to retry.")
+
+        if index < len(steps) - 1:
+            time.sleep(4)
+
 
 uploaded = st.file_uploader(f"Upload a lecture recording (max {MAX_MB} MB)", type=ALLOWED)
 
@@ -65,26 +139,12 @@ if uploaded:
     st.audio(uploaded)
 
     if st.button("Transcribe", type="primary"):
-        audio_path = None
         try:
-            suffix = os.path.splitext(uploaded.name)[1]
-            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-                tmp.write(uploaded.getbuffer())
-                audio_path = tmp.name
-
-            config = aai.TranscriptionConfig(language_detection=True)
-
             with st.spinner("Transcribing. Roughly a third of the audio length."):
-                transcript = aai.Transcriber().transcribe(audio_path, config=config)
-
-            if transcript.status == aai.TranscriptStatus.error:
-                st.error("Transcription failed. Check the audio file and try again.")
-                st.stop()
-
-            raw = transcript.text or ""
+                raw, duration = transcribe(uploaded)
 
             if not raw:
-                st.warning("No speech detected in that file.")
+                st.warning("No speech detected, or transcription failed.")
                 st.stop()
 
             corrected, changes = clean_transcript(raw, use_fuzzy=use_fuzzy)
@@ -92,18 +152,15 @@ if uploaded:
             st.session_state["raw"] = raw
             st.session_state["corrected"] = corrected
             st.session_state["changes"] = changes
-            st.session_state["duration"] = transcript.audio_duration
+            st.session_state["duration"] = duration
+
             # Clear old notes so they never belong to a previous recording.
-            for k in ("summary", "points", "questions"):
-                st.session_state.pop(k, None)
+            for stale in NOTE_KEYS:
+                st.session_state.pop(stale, None)
 
         except Exception:
             # Never surface the raw exception, some SDKs include the key in it.
             st.error("Something went wrong during transcription. Try again.")
-
-        finally:
-            if audio_path and os.path.exists(audio_path):
-                os.remove(audio_path)
 
 
 if "corrected" in st.session_state:
@@ -112,11 +169,11 @@ if "corrected" in st.session_state:
     changes = st.session_state["changes"]
     total_fixed = sum(c["times"] for c in changes)
 
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Words", len(raw.split()))
-    c2.metric("Terms corrected", total_fixed)
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Words", len(raw.split()))
+    col2.metric("Terms corrected", total_fixed)
     if st.session_state.get("duration"):
-        c3.metric("Length", f"{st.session_state['duration']} sec")
+        col3.metric("Length", f"{st.session_state['duration']} sec")
 
     tab_notes, tab_transcript, tab_changes = st.tabs(
         ["Study notes", "Transcript", "What was corrected"]
@@ -133,18 +190,19 @@ if "corrected" in st.session_state:
             st.caption("Technical terms restored to English")
             st.write(corrected)
 
-        d1, d2 = st.columns(2)
-        d1.download_button(
+        down1, down2 = st.columns(2)
+        down1.download_button(
             "Download raw", data=raw,
             file_name="transcript_raw.txt", mime="text/plain",
         )
-        d2.download_button(
+        down2.download_button(
             "Download corrected", data=corrected,
             file_name="transcript_corrected.txt", mime="text/plain",
         )
 
     with tab_changes:
         if changes:
+            st.caption("Every spelling the normalizer replaced, and how often.")
             st.dataframe(changes, use_container_width=True, hide_index=True)
         else:
             st.info("No known technical terms found in this transcript.")
@@ -152,32 +210,24 @@ if "corrected" in st.session_state:
     with tab_notes:
         if not gemini_key:
             st.warning("Add GEMINI_API_KEY to generate study notes.")
-        elif st.button("Generate study notes"):
-            try:
-                with st.spinner("Reading the lecture..."):
-                    st.session_state["summary"] = summarize(
-                        gemini_key, corrected, notes_language, term_style
-                    )
-                    st.session_state["points"] = key_points(
-                        gemini_key, corrected, notes_language, term_style
-                    )
-                    st.session_state["questions"] = practice_questions(
-                        gemini_key, corrected, 5, notes_language, term_style
-                    )
-            except Exception:
-                st.error("Could not generate notes. Check the key and try again.")
+        else:
+            if st.button("Generate study notes"):
+                try:
+                    generate_notes(corrected)
+                except Exception:
+                    st.error("Could not generate notes. Try again in a moment.")
 
-        if st.session_state.get("summary"):
-            st.subheader("Summary")
-            st.write(st.session_state["summary"])
+            if st.session_state.get("summary"):
+                st.subheader("Summary")
+                st.write(st.session_state["summary"])
 
-        if st.session_state.get("points"):
-            st.subheader("Key points")
-            for point in st.session_state["points"]:
-                st.markdown(f"- {point}")
+            if st.session_state.get("points"):
+                st.subheader("Key points")
+                for point in st.session_state["points"]:
+                    st.markdown(f"- {point}")
 
-        if st.session_state.get("questions"):
-            st.subheader("Practice questions")
-            for i, item in enumerate(st.session_state["questions"], start=1):
-                with st.expander(f"{i}. {item['question']}"):
-                    st.write(item["answer"])
+            if st.session_state.get("questions"):
+                st.subheader("Practice questions")
+                for number, item in enumerate(st.session_state["questions"], start=1):
+                    with st.expander(f"{number}. {item['question']}"):
+                        st.write(item["answer"])
