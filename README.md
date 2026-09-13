@@ -1,13 +1,14 @@
 # Sabaq
 
 Lecture notes for classrooms that mix Urdu and English.
-
 Built for the AssemblyAI Voice Agent Hackathon, September 2026.
 
 **Live app:** https://sabaq-ai.streamlit.app/
+
 **Repo:** https://github.com/hussnain-sulehri/sabaq
 
 ---
+
 ## The problem
 
 Teachers in Pakistan lecture in Urdu but keep technical terms in English. A
@@ -46,6 +47,8 @@ generates study material from the corrected text.
 - Notes in English or Urdu
 - Three term styles: keep terms in English, translate them to Urdu, or write
   them in Urdu with the English term in brackets
+- A comparison view across saved lectures, showing where the glossary holds
+  and where it does not
 
 ## Findings
 
@@ -74,23 +77,57 @@ into Urdu produced academic vocabulary no Pakistani CS student uses
 switched to Urdu numerals, which breaks search again. The technically complete
 option is the unusable one.
 
-**6. Gemini model availability changes.** During development, Gemini model
-availability changed between accounts and deployments. Instead of depending on
-one fixed model name, Sabaq now automatically selects the first available Gemini
-Flash model using the configured API key.
+**6. Model availability moves.** `gemini-2.5-flash` was retired for new users
+during this build. Model choice is now automatic: available models are found
+with a listing call, which costs no generation quota, and the first working one
+from a preference list is used. `GEMINI_MODEL` pins one model when set.
 
-The priority order is:
+**7. The transcript can switch writing system mid-sentence.** The database
+lecture began in Urdu script and flipped to Devanagari partway through, in the
+middle of a sentence, and never switched back. The same speaker, the same
+recording:
 
-1. `gemini-2.5-flash`
-2. `gemini-3.6-flash`
-3. `gemini-3.7-flash`
-4. `gemini-2.5-flash-lite`
-5. `gemini-3.5-flash`
+> ...اب فورن کی کیا बनाती है तो वो दूसरी टेबल की प्राइमरी की को अपने अंदर रखती है
 
-This avoids failures caused by retired models, account-specific availability,
-or different quota limits.
+This is the single biggest limit of the glossary approach. Every variant
+collected is in Urdu script, so nothing in the Devanagari half can be matched.
+Handling it needs script detection before normalization, which is the next
+piece of work.
 
-**Result:** 32 term corrections on a 60 second lecture, no false positives with
+**8. Acronyms survive, lowercase terms do not.** The web lecture returned
+HTML, CSS, JavaScript, DOM Events, Media Query and Responsive Design correctly
+in Latin script, unprompted. Acronyms are spoken letter by letter, so there is
+no Urdu phonetic form to fall back on. But CSS appeared as both `CSS` and
+`سی ایس ایس` in the same transcript, so the behaviour is inconsistent even
+within one file.
+
+**9. Short tags collapse.** "h1 tag" came back as `پی ای ٹیگ`, which reads as
+"P A tag". The digit and the letter are both gone. Single letters and
+alphanumeric tags are the worst case, worse than any full word.
+
+## Measured across three lectures
+
+Each lecture was scripted before recording, so the correct text was known in
+advance.
+
+| Lecture | Subject | Seconds | Words | Corrections | Unique terms | Per 100 words |
+|---|---|---|---|---|---|---|
+| Overfitting | AI / ML | 59 | 157 | 32 | 23 | 20.4 |
+| Database | Database | 58 | 137 | 4 | 2 | 2.9 |
+| Web | Web development | 51 | 137 | 3 | 2 | 2.2 |
+
+The AI lecture scores seven times higher than the other two. Two separate
+causes, and both are real limits rather than one:
+
+- The glossary holds AI vocabulary only, so database and web terms are not in it.
+- The database transcript switched to Devanagari partway through, so half of it
+  was invisible to a matcher built on Urdu-script variants.
+
+Only `students`, `data` and `lecture` appeared across subjects. Everything else
+was domain specific, which is the answer to whether a hand-built glossary
+generalises: within a subject yes, across subjects no.
+
+**Result:** 32 term corrections on the AI lecture, no false positives with
 fuzzy matching off. Every generated claim traced back to the transcript on
 manual review, with one soft embellishment ("stop before time" became "stop at
 the optimal time").
@@ -113,11 +150,10 @@ normalizer.py              glossary of observed variants, longest match first
 corrected transcript       terms in English, one spelling each
    |
    v
-teacher.py -> Gemini       automatic model selection
-                                    |
-                                    v
-                            summary, key points,
-                            practice questions
+teacher.py -> Gemini       one combined request, automatic model selection
+   |
+   v
+summary, key points, practice questions
 ```
 
 The normalizer is what makes the teaching layer possible. A language model
@@ -133,30 +169,29 @@ venv\Scripts\activate          # Windows
 source venv/bin/activate       # macOS and Linux
 pip install -r requirements.txt
 ```
-
 Copy `.env.example` to `.env` and fill in your keys:
 
 ```
 ASSEMBLYAI_API_KEY=your_assemblyai_key
 GEMINI_API_KEY=your_gemini_key
+GEMINI_MODEL=
 ```
+`GEMINI_MODEL` is optional. Leave it empty for automatic selection, or set it
+to pin one model.
 
 Then:
 
 ```bash
 streamlit run app.py
 ```
-
 ## Deploying
 
 The app runs on Streamlit Community Cloud from this repo. Keys go in the app's
 Secrets settings in TOML format, not in a file:
-
 ```toml
 ASSEMBLYAI_API_KEY = "your_assemblyai_key"
 GEMINI_API_KEY = "your_gemini_key"
 ```
-
 No key is ever hardcoded. `config.py` reads Streamlit secrets first, then the
 environment, so the same code runs in both places unchanged.
 
@@ -165,32 +200,35 @@ environment, so the same code runs in both places unchanged.
 | File | What it does |
 |---|---|
 | `app.py` | Streamlit interface, upload, transcription, and UI workflow |
-| `normalizer.py` | Glossary and technical term correction passes |
-| `teacher.py` | Gemini prompts, automatic model selection, retries, and note generation |
-| `config.py` | Secure API key loading |
-| `.env.example` | Template showing required environment variables |
+| `normalizer.py` | Glossary and the two correction passes |
+| `teacher.py` | Gemini prompts, model selection, retries, note generation |
+| `runs.py` | Saving runs and comparing lectures |
+| `config.py` | Key and setting loading |
+| `.env.example` | Template showing what to set |
 
 ## Built with
-
 Python, Streamlit, AssemblyAI Speech-to-Text, Google Gemini API.
-
 ## Limits
-
-The glossary covers AI and machine learning vocabulary. A chemistry or medicine
-lecture needs its own term list.
-
-Every variant in the glossary came from real output. It grows by running more
+The glossary covers AI and machine learning vocabulary. Database and web
+lectures corrected fewer than 3 terms per 100 words against 20.4 for AI, so a
+new subject needs its own term list.
+It assumes one writing system. A transcript that switches to Devanagari
+mid-sentence cannot be matched at all.
+Every variant came from real output. The glossary grows by running more
 lectures through the tool, not by guessing spellings ahead of time.
-
-Tested on one speaker and one subject so far. Different accents will produce
-different transliterations.
-
+Three lectures, one speaker. Different accents will produce different
+transliterations.
+Gemini's free tier allows 20 generation requests per day per model. Notes use
+one request. Quota errors are not retried on the same model, so a failure does
+not consume the rest of the budget.
 No word error rate benchmark yet. Correction counts are measured, overall
 transcription accuracy is not.
-
 ## Next
-
+Script detection before normalization, so a transcript that switches writing
+system can still be corrected.
 Word error rate split by pure Urdu segments versus segments containing English
-terms. Speaker separation so student questions are marked apart from the
-lecturer. Search across multiple lectures. A glossary that learns new variants
-from corrections instead of being hand-written. Automatic domain-specific glossary expansion from new lectures.
+terms.
+A glossary that learns new variants from corrections instead of being written
+by hand, and expands per subject from new lectures.
+Speaker separation so student questions are marked apart from the lecturer.
+Search across multiple lectures.
