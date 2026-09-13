@@ -8,7 +8,6 @@ Built for the AssemblyAI Voice Agent Hackathon, September 2026.
 **Repo:** https://github.com/hussnain-sulehri/sabaq
 
 ---
-
 ## The problem
 
 Teachers in Pakistan lecture in Urdu but keep technical terms in English. A
@@ -75,8 +74,21 @@ into Urdu produced academic vocabulary no Pakistani CS student uses
 switched to Urdu numerals, which breaks search again. The technically complete
 option is the unusable one.
 
-**6. Model names move.** `gemini-2.5-flash` was retired for new users during
-this build. The model name now lives in configuration, not code.
+**6. Gemini model availability changes.** During development, Gemini model
+availability changed between accounts and deployments. Instead of depending on
+one fixed model name, Sabaq now automatically selects the first available Gemini
+Flash model using the configured API key.
+
+The priority order is:
+
+1. `gemini-2.5-flash`
+2. `gemini-3.6-flash`
+3. `gemini-3.7-flash`
+4. `gemini-2.5-flash-lite`
+5. `gemini-3.5-flash`
+
+This avoids failures caused by retired models, account-specific availability,
+or different quota limits.
 
 **Result:** 32 term corrections on a 60 second lecture, no false positives with
 fuzzy matching off. Every generated claim traced back to the transcript on
@@ -101,7 +113,11 @@ normalizer.py              glossary of observed variants, longest match first
 corrected transcript       terms in English, one spelling each
    |
    v
-teacher.py -> Gemini       summary, key points, practice questions
+teacher.py -> Gemini       automatic model selection
+                                    |
+                                    v
+                            summary, key points,
+                            practice questions
 ```
 
 The normalizer is what makes the teaching layer possible. A language model
@@ -123,10 +139,7 @@ Copy `.env.example` to `.env` and fill in your keys:
 ```
 ASSEMBLYAI_API_KEY=your_assemblyai_key
 GEMINI_API_KEY=your_gemini_key
-GEMINI_MODEL=gemini-3.6-flash
 ```
-
-`GEMINI_MODEL` is optional. Set it when the default model is retired.
 
 Then:
 
@@ -151,15 +164,15 @@ environment, so the same code runs in both places unchanged.
 
 | File | What it does |
 |---|---|
-| `app.py` | Streamlit interface, upload and transcribe |
-| `normalizer.py` | Glossary and the two correction passes |
-| `teacher.py` | Gemini prompts, term styles, retry logic |
-| `config.py` | Key and setting loading |
-| `.env.example` | Template showing what to set |
+| `app.py` | Streamlit interface, upload, transcription, and UI workflow |
+| `normalizer.py` | Glossary and technical term correction passes |
+| `teacher.py` | Gemini prompts, automatic model selection, retries, and note generation |
+| `config.py` | Secure API key loading |
+| `.env.example` | Template showing required environment variables |
 
 ## Built with
 
-Python, Streamlit, AssemblyAI Speech-to-Text, Google Gemini.
+Python, Streamlit, AssemblyAI Speech-to-Text, Google Gemini API.
 
 ## Limits
 
@@ -180,4 +193,4 @@ transcription accuracy is not.
 Word error rate split by pure Urdu segments versus segments containing English
 terms. Speaker separation so student questions are marked apart from the
 lecturer. Search across multiple lectures. A glossary that learns new variants
-from corrections instead of being hand-written.
+from corrections instead of being hand-written. Automatic domain-specific glossary expansion from new lectures.
