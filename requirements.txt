@@ -2,3 +2,10 @@ streamlit
 assemblyai
 python-dotenv
 google-genai
+groq
+# Ships an ffmpeg binary inside the venv, so live mode can decode mp3, m4a
+# and mp4 without a system install. A system ffmpeg is used when present.
+imageio-ffmpeg
+# Microphone capture for live mode. Needs libportaudio2 (see packages.txt).
+# The app falls back to streaming a file when it cannot be imported.
+sounddevice

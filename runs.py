@@ -10,6 +10,8 @@ deployed app keeps runs for the session and offers a CSV download instead
 of pretending they persist.
 """
 
+import csv
+import io
 import json
 import re
 import time
@@ -30,8 +32,15 @@ def build_run(
     corrected: str,
     changes: list[dict],
     duration: int | None,
+    unknown: list[dict] | None = None,
 ) -> dict:
-    """Assemble one run record, with the comparison numbers already computed."""
+    """
+    Assemble one run record, with the comparison numbers already computed.
+
+    'unknown' is the leftover Urdu vocabulary the glossary did not cover.
+    Saving it is what lets the next version of the glossary be written from
+    measurements instead of from memory.
+    """
     words = len(raw.split())
     total = sum(c["times"] for c in changes)
     unique_terms = sorted({c["replaced_with"] for c in changes})
@@ -47,6 +56,7 @@ def build_run(
         "per_100_words": round(total / words * 100, 1) if words else 0.0,
         "terms": unique_terms,
         "changes": changes,
+        "unknown": unknown or [],
         "raw": raw,
         "corrected": corrected,
     }
@@ -114,15 +124,19 @@ def term_matrix(runs: list[dict]) -> list[dict]:
 
 
 def to_csv(runs: list[dict]) -> str:
-    """Comparison table as CSV text, for the deck and the write-up."""
+    """
+    Comparison table as CSV text, for the deck and the write-up.
+
+    Written with the csv module rather than string formatting, so a lecture
+    name containing a comma or a quote does not break the file.
+    """
     rows = summary_rows(runs)
     if not rows:
         return ""
 
-    headers = list(rows[0].keys())
-    lines = [",".join(headers)]
+    buffer = io.StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=list(rows[0].keys()))
+    writer.writeheader()
+    writer.writerows(rows)
 
-    for row in rows:
-        lines.append(",".join(f'"{row[h]}"' for h in headers))
-
-    return "\n".join(lines)
+    return buffer.getvalue()
