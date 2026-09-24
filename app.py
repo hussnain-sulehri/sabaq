@@ -49,7 +49,9 @@ from live import (
     transcribe_recording,
 )
 from speak import speak
-from normalizer import clean_transcript, has_devanagari, unknown_terms
+from normalizer import (
+    GENERAL_TERMS, clean_transcript, has_devanagari, unknown_terms,
+)
 from runs import build_run, load_runs, save_run, summary_rows, term_matrix, to_csv
 from teacher import (
     GEMINI, GROQ, TERM_STYLES, active_backend, answer_question,
@@ -440,13 +442,19 @@ if "raw" in st.session_state:
     # Recomputed every render, so the fuzzy toggle is live and free.
     corrected, changes = clean_transcript(raw, use_fuzzy=use_fuzzy)
     leftovers = unknown_terms(corrected)
-    total_fixed = sum(c["times"] for c in changes)
+    # Technical and everyday words counted apart, so "students" and
+    # "lecture" do not inflate the number that matters.
+    everyday_fixed = sum(
+        c["times"] for c in changes if c["replaced_with"] in GENERAL_TERMS
+    )
+    technical_fixed = sum(c["times"] for c in changes) - everyday_fixed
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     col1.metric("Words", len(raw.split()))
-    col2.metric("Terms corrected", total_fixed)
+    col2.metric("Technical terms corrected", technical_fixed)
+    col3.metric("Everyday words corrected", everyday_fixed)
     if st.session_state.get("duration"):
-        col3.metric("Length", f"{st.session_state['duration']} sec")
+        col4.metric("Length", f"{st.session_state['duration']} sec")
 
     turns = st.session_state.get("turns") or []
     languages = {}
@@ -458,9 +466,10 @@ if "raw" in st.session_state:
         spread = ", ".join(f"{code} ×{count}" for code, count in languages.items())
         st.warning(
             f"The speech API reported more than one language in this recording "
-            f"({spread}). Urdu and Hindi are the same language in two scripts, "
-            "so a 'hi' turn is the script flip, caught as it happened rather "
-            "than found afterwards."
+            f"({spread}). Spoken Urdu and Hindi are close enough that the model "
+            "often cannot tell them apart, so a 'hi' turn usually marks the "
+            "switch to Devanagari script, caught as it happened rather than "
+            "found afterwards."
         )
     elif languages:
         st.caption(
@@ -470,8 +479,9 @@ if "raw" in st.session_state:
 
     if has_devanagari(raw):
         st.warning(
-            "Part of this transcript is in Devanagari script. Every glossary "
-            "variant is in Urdu script, so that section cannot be corrected."
+            "Part of this transcript is in Devanagari script. Only Devanagari "
+            "spellings already observed are in the glossary, so most of that "
+            "section is left uncorrected. See the Not covered tab."
         )
 
     (tab_notes, tab_ask, tab_transcript, tab_changes, tab_unknown,

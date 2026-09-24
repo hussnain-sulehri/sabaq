@@ -25,9 +25,10 @@ import difflib
 import re
 from collections import Counter
 
-# Unicode blocks. Arabic covers Urdu; Devanagari is here only so the app can
-# warn when a transcript switches writing system partway through, which no
-# amount of Urdu-script glossary can fix.
+# Unicode blocks. Arabic covers Urdu. Devanagari appears when the streaming
+# model decides a turn is Hindi. Observed Devanagari spellings are in the
+# glossary and match through the same pass (finding 16); unseen ones are
+# missed exactly as unseen Urdu spellings are.
 ARABIC = r"\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF"
 DEVANAGARI = r"\u0900-\u097F"
 
@@ -38,6 +39,10 @@ DEVANAGARI = r"\u0900-\u097F"
 #   live   - whisper-rt streaming, same audio, different spellings
 #   deva   - Devanagari, from turns the streaming model labelled Hindi
 GLOSSARY: dict[str, list[str]] = {
+    # Observed in the database lecture, where ڈاٹا بیس had been corrected to
+    # "data بیس": half a term, counted as a correction. Longest match first
+    # now takes the compound before the shorter "data" entry sees it.
+    "database": ["ڈاٹا بیس"],
     "machine learning": [
         "مشین لرنڈنگ", "مشین لرننگ", "مشین لرنگ",
         "ماشین لرننگ",                                    # live
@@ -78,7 +83,9 @@ GLOSSARY: dict[str, list[str]] = {
         "स्टोडन्स", "स्टूडेंट्स",                            # deva
     ],
     "solution": ["سلوشن", "سولوشن"],
-    "percent": ["پرسنٹ", "فیصد"],
+    # فیصد removed: it is the native Urdu word, not a mangled spelling of
+    # "percent". The glossary holds transliterations only.
+    "percent": ["پرسنٹ"],
     "lecture": ["لیکچر", "لیکچرز"],
     "pattern": [
         "پیٹرڈ", "پیٹرن", "پیٹرنز",
@@ -98,6 +105,22 @@ GLOSSARY: dict[str, list[str]] = {
     "learn": ["لرن"],
     "test": ["تیسٹ", "ٹیسٹ"],
     "L2": ["ایل ٹو", "ایل۔ٹو"],
+}
+
+# Everyday English words, as opposed to subject vocabulary. Reported
+# separately so a headline count of technical corrections is not inflated by
+# "students" and "lecture".
+GENERAL_TERMS = frozenset({
+    "students", "lecture", "topic", "important", "understand", "solution",
+    "learn", "percent",
+})
+
+# Contexts in which a variant is ordinary Urdu rather than a term. ترین alone
+# is also the superlative suffix, written as a separate word in اہم ترین
+# ("most important"), and would otherwise become "اہم train".
+GUARDS: dict[str, list[str]] = {
+    "ترین": ["اہم", "کم", "مشکل", "آسان", "جدید", "تیز", "قریب", "عظیم",
+             "مضبوط", "بلند", "بڑا", "بڑے"],
 }
 
 # Ordinary Urdu words that sit close enough to a transliteration to be
@@ -141,10 +164,15 @@ def _compile_pairs() -> list[tuple[str, str, re.Pattern]]:
     ]
     flat.sort(key=lambda pair: len(pair[0]), reverse=True)
 
-    return [
-        (variant, english, re.compile(rf"(?<!\w){re.escape(variant)}(?!\w)"))
-        for variant, english in flat
-    ]
+    def pattern(variant: str) -> re.Pattern:
+        # One fixed-width lookbehind per guard word, since Python does not
+        # allow variable-width lookbehind.
+        guards = "".join(
+            rf"(?<!{re.escape(word)}\s)" for word in GUARDS.get(variant, [])
+        )
+        return re.compile(rf"(?<!\w){guards}{re.escape(variant)}(?!\w)")
+
+    return [(variant, english, pattern(variant)) for variant, english in flat]
 
 
 PAIRS = _compile_pairs()
@@ -300,9 +328,10 @@ def script_mix(text: str) -> dict:
     Characters per writing system.
 
     The database lecture flipped from Urdu script to Devanagari mid-sentence
-    and never switched back. Every glossary variant is Urdu script, so the
-    Devanagari half is invisible to the matcher. Surfacing the count is the
-    difference between a silent miss and a stated limit.
+    and never switched back. Only Devanagari spellings already observed are
+    in the glossary, so most of a flipped section is still uncorrected.
+    Surfacing the count is the difference between a silent miss and a stated
+    limit.
     """
     return {
         "urdu": sum(len(run) for run in _URDU_RUN.findall(text)),
@@ -312,5 +341,5 @@ def script_mix(text: str) -> dict:
 
 
 def has_devanagari(text: str) -> bool:
-    """True when part of the transcript is in a script the glossary cannot reach."""
+    """True when part of the transcript is in Devanagari, which the glossary covers only partly."""
     return bool(_DEVANAGARI.search(text))
