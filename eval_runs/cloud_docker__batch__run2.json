@@ -1,0 +1,6 @@
+{
+  "raw": "क्लाउड कंप्यूटिंग के अंदर डॉकर और कंटेनर्स क्या होते हैं? सॉफ्टवेयर डेवलपमेंट में एक कॉमन प्रॉब्लम आती है, जो डेवलपर है उसको कि जो एप्लीकेशन है, वो कंप्यूटर पर परफेक्टली रन कर रही होती है। लेकिन जब ही डेवलपर उस एप्लीकेशन को सर्वर के ऊपर डिप्लॉय करता है, तो एरर्स आ ज सबसे पहले हम Docker image create करते हैं, usually जो कि एक Docker file होती है, उस image को use करके हम एक या multiple containers run कर सकते हैं। जो Docker container होता है ना, वो lightweight होता है और easily different systems पर run हो सकता है। Cloud environment में containers को automatically scale भी किया जा सकता है। Modern DevOps में Docker के साथ Kubernetes, CI/CD pipelines, GitHub actions, deployment और monitoring भी commonly use होती है।",
+  "turns": [],
+  "language": "hi",
+  "audio": "cloud_docker.mp4"
+}

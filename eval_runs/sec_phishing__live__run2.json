@@ -1,0 +1,47 @@
+{
+  "raw": "फिशिंग एटेक क्यो हता है अच्छा फुषिं एक बेसिकली साइबर सेक्यूरिटी की एह तर्म है और phishing word जो है वो basically data steal करने औफेक email वगारे से related है cyber security के अंदर phishy attack एक ऐसा attack होता है जहाँ attacker जू है वू किसी भी trusted company या कि सी person की identity इंटिटी कोपी करके किसी भी यूजर से sensitive information लेने की कुशिश करता है मिसाल के तोर पर हमें एक fake email आती है जिसमे लिख़्ा होताई कि आपका account block होने वाल है और आमको अपना password reset करना हूंगा अगर हम उस link पर click करते हैं तो attacker जो है वो क्या करना है कि हमारा username और password स्टील कर लेता हूँ इस तरह कि attacker से हमेशा बचने के लिए url verify करें दूसरी चीज unknown attachments download ना क्रेए और two -factor authentication एनेबल करें जो companies हैं वो security के लिए firewall encryption औूर intrusion detection system use करती है cyber security में टेक्नालोजी के साथ user awareness भी बहुत important होती ہے",
+  "turns": [
+    {
+      "order": 0,
+      "text": "फिशिंग एटेक क्यो हता है अच्छा फुषिं एक बेसिकली साइबर सेक्यूरिटी की एह तर्म है",
+      "language": "hi",
+      "confidence": 0.722362,
+      "received_at": 9.0,
+      "audio_at": 7.9
+    },
+    {
+      "order": 1,
+      "text": "और phishing word जो है वो basically data steal करने औफेक email वगारे से related है cyber security के अंदर phishy attack एक ऐसा attack होता है जहाँ attacker जू है वू किसी भी trusted company या कि सी person की identity",
+      "language": "en",
+      "confidence": 1.0,
+      "received_at": 31.7,
+      "audio_at": 30.6
+    },
+    {
+      "order": 2,
+      "text": "इंटिटी कोपी करके किसी भी यूजर से sensitive information लेने की कुशिश करता है मिसाल के तोर पर हमें एक fake email आती है जिसमे लिख़्ा होताई कि आपका account block होने वाल है और आमको अपना password reset करना हूंगा",
+      "language": "hi",
+      "confidence": 1.0,
+      "received_at": 42.2,
+      "audio_at": 41.1
+    },
+    {
+      "order": 3,
+      "text": "अगर हम उस link पर click करते हैं तो attacker जो है वो क्या करना है कि हमारा username और password स्टील कर लेता हूँ इस तरह कि attacker से हमेशा बचने के लिए url verify करें दूसरी चीज unknown attachments download ना क्रेए",
+      "language": "hi",
+      "confidence": 1.0,
+      "received_at": 55.6,
+      "audio_at": 54.5
+    },
+    {
+      "order": 4,
+      "text": "और two -factor authentication एनेबल करें जो companies हैं वो security के लिए firewall encryption औूर intrusion detection system use करती है cyber security में टेक्नालोजी के साथ user awareness भी बहुत important होती ہے",
+      "language": "en",
+      "confidence": 1.0,
+      "received_at": 73.1,
+      "audio_at": 66.3
+    }
+  ],
+  "lag": 6.8,
+  "audio": "sec_phishing.mp4"
+}
