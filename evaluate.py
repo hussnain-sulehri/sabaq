@@ -32,6 +32,7 @@ import os
 import re
 import statistics
 import sys
+import time
 from pathlib import Path
 
 from ground_truth import ALIASES, LECTURES
@@ -41,6 +42,10 @@ CACHE = Path("eval_runs")
 RESULTS = Path("results")
 FROZEN = RESULTS / "glossary_frozen.json"
 AUDIO_EXT = (".mp3", ".wav", ".m4a", ".mp4")
+
+# Streaming handshakes time out now and then. Retry only those.
+CONNECT_ATTEMPTS = 3
+CONNECT_WAIT_SEC = 20
 
 
 # -----------------------------
@@ -161,10 +166,25 @@ def cmd_transcribe(args) -> None:
                     print(f"   {target.name}: cached")
                     continue
                 print(f">> {lecture} {path} run {run} ...", flush=True)
-                try:
-                    data = _batch(key, audio) if path == "batch" else _live(key, audio)
-                except Exception as error:  # keep going; one bad file is not the run
-                    print(f"   FAILED: {error}")
+                data = None
+                for attempt in range(1, CONNECT_ATTEMPTS + 1):
+                    try:
+                        data = _batch(key, audio) if path == "batch" else _live(key, audio)
+                        break
+                    except Exception as error:  # keep going; one bad file is not the run
+                        # Retrying a failed connection is not re-rolling a
+                        # result: no transcript was produced. A session that
+                        # connected and then failed is not retried.
+                        text = str(error).lower()
+                        connect = "connection failed" in text or "handshake" in text
+                        if connect and attempt < CONNECT_ATTEMPTS:
+                            print(f"   connection failed, retrying in "
+                                  f"{CONNECT_WAIT_SEC}s ({attempt}/{CONNECT_ATTEMPTS})")
+                            time.sleep(CONNECT_WAIT_SEC)
+                            continue
+                        print(f"   FAILED: {error}")
+                        break
+                if data is None:
                     continue
                 data["audio"] = audio.name
                 target.write_text(json.dumps(data, ensure_ascii=False, indent=2),

@@ -1217,18 +1217,18 @@
       "devanagari": true,
       "words": 137,
       "core": {
-        "expected": 25,
+        "expected": 34,
         "model": 0,
         "glossary": 3,
-        "missed": 22,
-        "recall": 0.12
+        "missed": 31,
+        "recall": 0.088
       },
       "general": {
-        "expected": 6,
+        "expected": 8,
         "model": 0,
         "glossary": 2,
-        "missed": 4,
-        "recall": 0.333
+        "missed": 6,
+        "recall": 0.25
       },
       "inserted": 5,
       "wrong": 0,
@@ -1248,7 +1248,7 @@
         {
           "term": "table",
           "tier": "core",
-          "missed": 5
+          "missed": 7
         },
         {
           "term": "column",
@@ -1262,6 +1262,16 @@
         },
         {
           "term": "unique",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "relation",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "data",
           "tier": "core",
           "missed": 1
         },
@@ -1291,6 +1301,31 @@
           "missed": 1
         },
         {
+          "term": "first normal form",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "second normal form",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "third normal form",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "index",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "query optimization",
+          "tier": "core",
+          "missed": 1
+        },
+        {
           "term": "student",
           "tier": "general",
           "missed": 1
@@ -1307,6 +1342,16 @@
         },
         {
           "term": "use",
+          "tier": "general",
+          "missed": 1
+        },
+        {
+          "term": "level",
+          "tier": "general",
+          "missed": 1
+        },
+        {
+          "term": "lecture",
           "tier": "general",
           "missed": 1
         }
@@ -1528,18 +1573,18 @@
       "devanagari": true,
       "words": 145,
       "core": {
-        "expected": 25,
+        "expected": 34,
         "model": 0,
         "glossary": 3,
-        "missed": 22,
-        "recall": 0.12
+        "missed": 31,
+        "recall": 0.088
       },
       "general": {
-        "expected": 6,
+        "expected": 8,
         "model": 0,
         "glossary": 2,
-        "missed": 4,
-        "recall": 0.333
+        "missed": 6,
+        "recall": 0.25
       },
       "inserted": 5,
       "wrong": 0,
@@ -1559,7 +1604,7 @@
         {
           "term": "table",
           "tier": "core",
-          "missed": 5
+          "missed": 7
         },
         {
           "term": "column",
@@ -1573,6 +1618,16 @@
         },
         {
           "term": "unique",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "relation",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "data",
           "tier": "core",
           "missed": 1
         },
@@ -1602,6 +1657,31 @@
           "missed": 1
         },
         {
+          "term": "first normal form",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "second normal form",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "third normal form",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "index",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "query optimization",
+          "tier": "core",
+          "missed": 1
+        },
+        {
           "term": "student",
           "tier": "general",
           "missed": 1
@@ -1618,6 +1698,16 @@
         },
         {
           "term": "use",
+          "tier": "general",
+          "missed": 1
+        },
+        {
+          "term": "level",
+          "tier": "general",
+          "missed": 1
+        },
+        {
+          "term": "lecture",
           "tier": "general",
           "missed": 1
         }
@@ -1843,29 +1933,23 @@
       "devanagari": true,
       "words": 164,
       "core": {
-        "expected": 25,
-        "model": 8,
+        "expected": 34,
+        "model": 12,
         "glossary": 0,
-        "missed": 17,
-        "recall": 0.32
+        "missed": 22,
+        "recall": 0.353
       },
       "general": {
-        "expected": 6,
+        "expected": 8,
         "model": 0,
-        "glossary": 1,
-        "missed": 5,
-        "recall": 0.167
+        "glossary": 2,
+        "missed": 6,
+        "recall": 0.25
       },
-      "inserted": 4,
-      "wrong": 3,
-      "precision": 0.25,
-      "unexpected_replacements": [
-        {
-          "found": "لیکچر",
-          "replaced_with": "lecture",
-          "times": 1
-        }
-      ],
+      "inserted": 3,
+      "wrong": 1,
+      "precision": 0.667,
+      "unexpected_replacements": [],
       "missed_terms": [
         {
           "term": "database",
@@ -1885,7 +1969,7 @@
         {
           "term": "table",
           "tier": "core",
-          "missed": 5
+          "missed": 7
         },
         {
           "term": "column",
@@ -1903,12 +1987,27 @@
           "missed": 1
         },
         {
+          "term": "relation",
+          "tier": "core",
+          "missed": 1
+        },
+        {
           "term": "join",
           "tier": "core",
           "missed": 1
         },
         {
           "term": "inner join",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "index",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "query optimization",
           "tier": "core",
           "missed": 1
         },
@@ -1929,6 +2028,11 @@
         },
         {
           "term": "use",
+          "tier": "general",
+          "missed": 1
+        },
+        {
+          "term": "level",
           "tier": "general",
           "missed": 1
         }
@@ -1960,7 +2064,7 @@
           "script": "devanagari"
         },
         {
-          "term": "ाबेस",
+          "term": "डाटाबेस",
           "times": 1,
           "script": "devanagari"
         },
@@ -2135,7 +2239,7 @@
           "script": "devanagari"
         }
       ],
-      "corrected": "असलाम उलेकूं students आज हम dataाबेस का एक बनियाती कंसर्थ पढ़ेंगे प्राइम्री की एंड फॉरन की دیکھیں ہاں ٹیبل میں ایک کولم ہوتا ہے جو ہر روک کو یونیک بناتا ہے اس کو کہتے ہیں پرائیمری کی مثال کے طور پہ جیسے میرے پاس یہ نئی سی ایڈی ہے ایسے ہی data بیس میں سٹوڈنٹ ٹیبل میں رول نمبر پرائمری کی ہو سکتا ہے کیونکہ دو سٹودنز کا رول کبھی سیم نہیں ہوتا افوران کی کیا ہے جب ایک ٹیبل دوسری ٹےبل سے ریلیشن بناتی ہے تو وہ دوسری टेबल की primary key को अपने अंदर रखती है। उसको foreign key कहते हैं। जब हम data निकालना चाहते हैं تو دو ٹیبل سے ہم جوائن یوز کرتے ہیں انر جوئن صرف matching row देता है left join palatable की सारी row डेते है normalizations का मकसद duplicate data काम करना first normal form second normal form third normal form تین لیوز ہیں اگلے lecture میں ہم انڈیکس اور سیکیورٹی اپٹیمائزیشن پر بات کریں گے"
+      "corrected": "असलाम उलेकूं students आज हम डाटाबेस का एक बनियाती कंसर्थ पढ़ेंगे प्राइम्री की एंड फॉरन की دیکھیں ہاں ٹیبل میں ایک کولم ہوتا ہے جو ہر روک کو یونیک بناتا ہے اس کو کہتے ہیں پرائیمری کی مثال کے طور پہ جیسے میرے پاس یہ نئی سی ایڈی ہے ایسے ہی data بیس میں سٹوڈنٹ ٹیبل میں رول نمبر پرائمری کی ہو سکتا ہے کیونکہ دو سٹودنز کا رول کبھی سیم نہیں ہوتا افوران کی کیا ہے جب ایک ٹیبل دوسری ٹےبل سے ریلیشن بناتی ہے تو وہ دوسری टेबल की primary key को अपने अंदर रखती है। उसको foreign key कहते हैं। जब हम data निकालना चाहते हैं تو دو ٹیبل سے ہم جوائن یوز کرتے ہیں انر جوئن صرف matching row देता है left join palatable की सारी row डेते है normalizations का मकसद duplicate data काम करना first normal form second normal form third normal form تین لیوز ہیں اگلے lecture میں ہم انڈیکس اور سیکیورٹی اپٹیمائزیشن پر بات کریں گے"
     },
     {
       "lecture": "db_keys",
@@ -2154,29 +2258,23 @@
       "devanagari": true,
       "words": 164,
       "core": {
-        "expected": 25,
-        "model": 8,
+        "expected": 34,
+        "model": 12,
         "glossary": 0,
-        "missed": 17,
-        "recall": 0.32
+        "missed": 22,
+        "recall": 0.353
       },
       "general": {
-        "expected": 6,
+        "expected": 8,
         "model": 0,
-        "glossary": 1,
-        "missed": 5,
-        "recall": 0.167
+        "glossary": 2,
+        "missed": 6,
+        "recall": 0.25
       },
-      "inserted": 4,
-      "wrong": 3,
-      "precision": 0.25,
-      "unexpected_replacements": [
-        {
-          "found": "لیکچر",
-          "replaced_with": "lecture",
-          "times": 1
-        }
-      ],
+      "inserted": 3,
+      "wrong": 1,
+      "precision": 0.667,
+      "unexpected_replacements": [],
       "missed_terms": [
         {
           "term": "database",
@@ -2196,7 +2294,7 @@
         {
           "term": "table",
           "tier": "core",
-          "missed": 5
+          "missed": 7
         },
         {
           "term": "column",
@@ -2214,12 +2312,27 @@
           "missed": 1
         },
         {
+          "term": "relation",
+          "tier": "core",
+          "missed": 1
+        },
+        {
           "term": "join",
           "tier": "core",
           "missed": 1
         },
         {
           "term": "inner join",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "index",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "query optimization",
           "tier": "core",
           "missed": 1
         },
@@ -2240,6 +2353,11 @@
         },
         {
           "term": "use",
+          "tier": "general",
+          "missed": 1
+        },
+        {
+          "term": "level",
           "tier": "general",
           "missed": 1
         }
@@ -2271,7 +2389,7 @@
           "script": "devanagari"
         },
         {
-          "term": "ाबेस",
+          "term": "डाटाबेस",
           "times": 1,
           "script": "devanagari"
         },
@@ -2446,7 +2564,7 @@
           "script": "devanagari"
         }
       ],
-      "corrected": "असलाम उलेकूं students आज हम dataाबेस का एक बनियाती कंसर्थ पढ़ेंगे प्राइम्री की एंड फॉरन की دیکھیں ہاں ٹیبل میں ایک کولم ہوتا ہے جو ہر روک کو یونیک بناتا ہے اس کو کہتے ہیں پرائیمری کی مثال کے طور پہ جیسے میرے پاس یہ نئی سی ایڈی ہے ایسے ہی data بیس میں سٹوڈنٹ ٹیبل میں رول نمبر پرائمری کی ہو سکتا ہے کیونکہ دو سٹودنز کا رول کبھی سیم نہیں ہوتا افوران کی کیا ہے جب ایک ٹیبل دوسری ٹےبل سے ریلیشن بناتی ہے تو وہ دوسری टेबल की primary key को अपने अंदर रखती है। उसको foreign key कहते हैं। जब हम data निकालना चाहते हैं تو دو ٹیبل سے ہم جوائن یوز کرتے ہیں انر جوئن صرف matching row देता है left join palatable की सारी row डेते है normalizations का मकसद duplicate data काम करना first normal form second normal form third normal form تین لیوز ہیں اگلے lecture میں ہم انڈیکس اور سیکیورٹی اپٹیمائزیشن پر بات کریں گے"
+      "corrected": "असलाम उलेकूं students आज हम डाटाबेस का एक बनियाती कंसर्थ पढ़ेंगे प्राइम्री की एंड फॉरन की دیکھیں ہاں ٹیبل میں ایک کولم ہوتا ہے جو ہر روک کو یونیک بناتا ہے اس کو کہتے ہیں پرائیمری کی مثال کے طور پہ جیسے میرے پاس یہ نئی سی ایڈی ہے ایسے ہی data بیس میں سٹوڈنٹ ٹیبل میں رول نمبر پرائمری کی ہو سکتا ہے کیونکہ دو سٹودنز کا رول کبھی سیم نہیں ہوتا افوران کی کیا ہے جب ایک ٹیبل دوسری ٹےبل سے ریلیشن بناتی ہے تو وہ دوسری टेबल की primary key को अपने अंदर रखती है। उसको foreign key कहते हैं। जब हम data निकालना चाहते हैं تو دو ٹیبل سے ہم جوائن یوز کرتے ہیں انر جوئن صرف matching row देता है left join palatable की सारी row डेते है normalizations का मकसद duplicate data काम करना first normal form second normal form third normal form تین لیوز ہیں اگلے lecture میں ہم انڈیکس اور سیکیورٹی اپٹیمائزیشن پر بات کریں گے"
     },
     {
       "lecture": "db_keys",
@@ -2465,29 +2583,23 @@
       "devanagari": true,
       "words": 164,
       "core": {
-        "expected": 25,
-        "model": 8,
+        "expected": 34,
+        "model": 12,
         "glossary": 0,
-        "missed": 17,
-        "recall": 0.32
+        "missed": 22,
+        "recall": 0.353
       },
       "general": {
-        "expected": 6,
+        "expected": 8,
         "model": 0,
-        "glossary": 1,
-        "missed": 5,
-        "recall": 0.167
+        "glossary": 2,
+        "missed": 6,
+        "recall": 0.25
       },
-      "inserted": 4,
-      "wrong": 3,
-      "precision": 0.25,
-      "unexpected_replacements": [
-        {
-          "found": "لیکچر",
-          "replaced_with": "lecture",
-          "times": 1
-        }
-      ],
+      "inserted": 3,
+      "wrong": 1,
+      "precision": 0.667,
+      "unexpected_replacements": [],
       "missed_terms": [
         {
           "term": "database",
@@ -2507,7 +2619,7 @@
         {
           "term": "table",
           "tier": "core",
-          "missed": 5
+          "missed": 7
         },
         {
           "term": "column",
@@ -2525,12 +2637,27 @@
           "missed": 1
         },
         {
+          "term": "relation",
+          "tier": "core",
+          "missed": 1
+        },
+        {
           "term": "join",
           "tier": "core",
           "missed": 1
         },
         {
           "term": "inner join",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "index",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "query optimization",
           "tier": "core",
           "missed": 1
         },
@@ -2551,6 +2678,11 @@
         },
         {
           "term": "use",
+          "tier": "general",
+          "missed": 1
+        },
+        {
+          "term": "level",
           "tier": "general",
           "missed": 1
         }
@@ -2582,7 +2714,7 @@
           "script": "devanagari"
         },
         {
-          "term": "ाबेस",
+          "term": "डाटाबेस",
           "times": 1,
           "script": "devanagari"
         },
@@ -2757,7 +2889,7 @@
           "script": "devanagari"
         }
       ],
-      "corrected": "असलाम उलेकूं students आज हम dataाबेस का एक बनियाती कंसर्थ पढ़ेंगे प्राइम्री की एंड फॉरन की دیکھیں ہاں ٹیبل میں ایک کولم ہوتا ہے جو ہر روک کو یونیک بناتا ہے اس کو کہتے ہیں پرائیمری کی مثال کے طور پہ جیسے میرے پاس یہ نئی سی ایڈی ہے ایسے ہی data بیس میں سٹوڈنٹ ٹیبل میں رول نمبر پرائمری کی ہو سکتا ہے کیونکہ دو سٹودنز کا رول کبھی سیم نہیں ہوتا افوران کی کیا ہے جب ایک ٹیبل دوسری ٹےبل سے ریلیشن بناتی ہے تو وہ دوسری टेबल की primary key को अपने अंदर रखती है। उसको foreign key कहते हैं। जब हम data निकालना चाहते हैं تو دو ٹیبل سے ہم جوائن یوز کرتے ہیں انر جوئن صرف matching row देता है left join palatable की सारी row डेते है normalizations का मकसद duplicate data काम करना first normal form second normal form third normal form تین لیوز ہیں اگلے lecture میں ہم انڈیکس اور سیکیورٹی اپٹیمائزیشن پر بات کریں گے"
+      "corrected": "असलाम उलेकूं students आज हम डाटाबेस का एक बनियाती कंसर्थ पढ़ेंगे प्राइम्री की एंड फॉरन की دیکھیں ہاں ٹیبل میں ایک کولم ہوتا ہے جو ہر روک کو یونیک بناتا ہے اس کو کہتے ہیں پرائیمری کی مثال کے طور پہ جیسے میرے پاس یہ نئی سی ایڈی ہے ایسے ہی data بیس میں سٹوڈنٹ ٹیبل میں رول نمبر پرائمری کی ہو سکتا ہے کیونکہ دو سٹودنز کا رول کبھی سیم نہیں ہوتا افوران کی کیا ہے جب ایک ٹیبل دوسری ٹےبل سے ریلیشن بناتی ہے تو وہ دوسری टेबल की primary key को अपने अंदर रखती है। उसको foreign key कहते हैं। जब हम data निकालना चाहते हैं تو دو ٹیبل سے ہم جوائن یوز کرتے ہیں انر جوئن صرف matching row देता है left join palatable की सारी row डेते है normalizations का मकसद duplicate data काम करना first normal form second normal form third normal form تین لیوز ہیں اگلے lecture میں ہم انڈیکس اور سیکیورٹی اپٹیمائزیشن پر بات کریں گے"
     },
     {
       "lecture": "ml_overfitting",
@@ -2772,11 +2904,11 @@
       "devanagari": false,
       "words": 157,
       "core": {
-        "expected": 25,
+        "expected": 26,
         "model": 0,
         "glossary": 25,
-        "missed": 0,
-        "recall": 1.0
+        "missed": 1,
+        "recall": 0.962
       },
       "general": {
         "expected": 8,
@@ -2790,6 +2922,11 @@
       "precision": 1.0,
       "unexpected_replacements": [],
       "missed_terms": [
+        {
+          "term": "overfitting",
+          "tier": "core",
+          "missed": 1
+        },
         {
           "term": "use",
           "tier": "general",
@@ -2963,11 +3100,11 @@
       "devanagari": false,
       "words": 157,
       "core": {
-        "expected": 25,
+        "expected": 26,
         "model": 0,
         "glossary": 25,
-        "missed": 0,
-        "recall": 1.0
+        "missed": 1,
+        "recall": 0.962
       },
       "general": {
         "expected": 8,
@@ -2981,6 +3118,11 @@
       "precision": 1.0,
       "unexpected_replacements": [],
       "missed_terms": [
+        {
+          "term": "overfitting",
+          "tier": "core",
+          "missed": 1
+        },
         {
           "term": "use",
           "tier": "general",
@@ -3158,9 +3300,9 @@
       "devanagari": true,
       "words": 158,
       "core": {
-        "expected": 25,
+        "expected": 26,
         "model": 6,
-        "glossary": 19,
+        "glossary": 20,
         "missed": 0,
         "recall": 1.0
       },
@@ -3172,8 +3314,8 @@
         "recall": 1.0
       },
       "inserted": 25,
-      "wrong": 1,
-      "precision": 0.96,
+      "wrong": 0,
+      "precision": 1.0,
       "unexpected_replacements": [],
       "missed_terms": [],
       "uncovered": [
@@ -3347,9 +3489,9 @@
       "devanagari": true,
       "words": 158,
       "core": {
-        "expected": 25,
+        "expected": 26,
         "model": 6,
-        "glossary": 19,
+        "glossary": 20,
         "missed": 0,
         "recall": 1.0
       },
@@ -3361,8 +3503,8 @@
         "recall": 1.0
       },
       "inserted": 25,
-      "wrong": 1,
-      "precision": 0.96,
+      "wrong": 0,
+      "precision": 1.0,
       "unexpected_replacements": [],
       "missed_terms": [],
       "uncovered": [
@@ -3536,9 +3678,9 @@
       "devanagari": true,
       "words": 158,
       "core": {
-        "expected": 25,
+        "expected": 26,
         "model": 6,
-        "glossary": 19,
+        "glossary": 20,
         "missed": 0,
         "recall": 1.0
       },
@@ -3550,8 +3692,8 @@
         "recall": 1.0
       },
       "inserted": 25,
-      "wrong": 1,
-      "precision": 0.96,
+      "wrong": 0,
+      "precision": 1.0,
       "unexpected_replacements": [],
       "missed_terms": [],
       "uncovered": [

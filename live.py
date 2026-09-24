@@ -209,10 +209,22 @@ def file_chunks(
                     break
                 yield chunk
         finally:
-            process.stdout.close()
-            if process.wait() != 0:
-                log.error("ffmpeg failed: %s", process.stderr.read()[:400])
-            process.stderr.close()
+            # When the socket fails, reading stops before the file ends.
+            # Stop ffmpeg as well, instead of letting it fail on a closed
+            # pipe and report that as an ffmpeg error.
+            try:
+                stopped_early = process.poll() is None
+                if stopped_early:
+                    process.kill()
+                process.stdout.close()
+                code = process.wait()
+                if code != 0 and not stopped_early:
+                    log.error("ffmpeg failed: %s", process.stderr.read()[:400])
+                process.stderr.close()
+            except OSError:
+                # On Windows the handle can already be released when the
+                # generator is cleaned up late. Nothing is left to close.
+                pass
 
     chunks = reader()
     return _pace(chunks, speed) if realtime else chunks

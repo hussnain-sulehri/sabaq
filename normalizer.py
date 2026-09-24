@@ -32,6 +32,16 @@ from collections import Counter
 ARABIC = r"\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF"
 DEVANAGARI = r"\u0900-\u097F"
 
+# What counts as "inside a word" for boundary checks. Python's \w does not
+# include combining vowel signs, so डाट matched inside डाटाबेस ("database")
+# because the ा after it was not seen as part of the word. Found in
+# evaluation. Vowel signs and Urdu diacritics are added here; the Devanagari
+# full stops । and ॥ are left out so a variant before them still matches.
+WORD_CHARS = (
+    r"\w\u0900-\u0963\u0966-\u097F"               # Devanagari, minus । ॥
+    r"\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED"  # Arabic-script marks
+)
+
 # Canonical English term -> spellings seen in output.
 #
 # Sources, so the list can be audited rather than trusted:
@@ -153,9 +163,10 @@ def _compile_pairs() -> list[tuple[str, str, re.Pattern]]:
     Longest first matters: 'training data' must be replaced before 'data',
     otherwise the shorter match eats part of the longer phrase.
 
-    The pattern is anchored with word-boundary lookarounds. Python's \\w
-    covers Urdu letters, so this stops a variant matching inside a longer
-    Urdu word without needing a separate tokenizer.
+    The pattern is anchored with word-boundary lookarounds over WORD_CHARS,
+    which is \\w plus the vowel signs and diacritics \\w leaves out. This
+    stops a variant matching inside a longer Urdu or Devanagari word without
+    needing a separate tokenizer.
     """
     flat = [
         (variant, english)
@@ -170,7 +181,9 @@ def _compile_pairs() -> list[tuple[str, str, re.Pattern]]:
         guards = "".join(
             rf"(?<!{re.escape(word)}\s)" for word in GUARDS.get(variant, [])
         )
-        return re.compile(rf"(?<!\w){guards}{re.escape(variant)}(?!\w)")
+        return re.compile(
+            rf"(?<![{WORD_CHARS}]){guards}{re.escape(variant)}(?![{WORD_CHARS}])"
+        )
 
     return [(variant, english, pattern(variant)) for variant, english in flat]
 

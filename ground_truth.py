@@ -13,11 +13,13 @@ Counting rules, so a second person could redo them:
   "testing". "Software Development Life Cycle" is not also "software
   development".
 - A plural counts as its singular ("processes" -> process).
-- The four new lectures are counted from their scripts. The first three are
-  counted from their transcripts, because those scripts are not in the repo.
-  CHECK THOSE THREE AGAINST THE ORIGINAL SCRIPTS: a transcript cannot show a
-  term the model dropped completely, and the database transcript ends
-  mid-sentence at "duplicate".
+- The four new lectures are counted from their scripts. The scripts for the
+  first three were not kept, so they are counted from their transcripts,
+  taking the fuller of batch and live. The first count used batch only and
+  missed speech batch had dropped: a third "overfitting" in the AI lecture,
+  and a whole sentence plus the ending of the database lecture. Both were
+  corrected from the live transcripts. A term dropped by both paths is still
+  not counted.
 
 split (two questions: is the speaker new, is the subject in the glossary?)
 - harvested                   the glossary was built from this recording
@@ -60,12 +62,14 @@ ALIASES: dict[str, list[str]] = {
     "shortest job first": ["sjf"],
     "database": ["data base"],
     "normalization": ["normalisation"],
+    "query optimization": ["query optimisation"],
+    "index": ["indexes", "indices"],
     "regularization": ["regularisation"],
 }
 
 # Terms of the original AI lecture, reused for any re-read of the same script.
 _ML_CORE = {
-    "machine learning": 1, "overfitting": 2, "model": 3, "train": 2,
+    "machine learning": 1, "overfitting": 3, "model": 3, "train": 2,
     "training data": 2, "data": 2, "pattern": 3, "training accuracy": 1,
     "test accuracy": 1, "regularization": 2, "dropout": 1, "l2": 1,
     "early stopping": 1, "training": 1, "gradient descent": 1,
@@ -86,15 +90,23 @@ LECTURES: dict[str, dict] = {
     "db_keys": {
         "title": "Primary and foreign keys", "subject": "Database",
         "speaker": "S1", "split": "same speaker · new subject",
-        # رو نمبر is left out: roll number or row number is ambiguous from
-        # the transcript. Settle it from the script.
+        # Counted from the live transcript, which kept a sentence and the
+        # ending that batch dropped. The live model wrote رول, so the
+        # number in the example is roll number, not row number.
         "core": {
-            "database": 2, "primary key": 4, "foreign key": 3, "table": 5,
-            "column": 1, "row": 3, "unique": 1, "data": 1, "join": 1,
-            "inner join": 1, "left join": 1, "normalization": 1,
-            "duplicate": 1,
+            "database": 2, "primary key": 4, "foreign key": 3, "table": 7,
+            "column": 1, "row": 3, "unique": 1, "relation": 1, "data": 2,
+            "join": 1, "inner join": 1, "left join": 1, "normalization": 1,
+            "duplicate": 1, "first normal form": 1, "second normal form": 1,
+            "third normal form": 1, "index": 1,
+            # Spoken "query optimization"; the live model heard "security"
+            # (سیکیورٹی), a substitution no glossary can undo.
+            "query optimization": 1,
         },
-        "general": {"student": 3, "concept": 1, "same": 1, "use": 1},
+        "general": {
+            "student": 3, "concept": 1, "same": 1, "use": 1, "level": 1,
+            "lecture": 1,
+        },
     },
     "web_html_css": {
         "title": "HTML and CSS", "subject": "Web development",
