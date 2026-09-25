@@ -11,6 +11,7 @@ of pretending they persist.
 """
 
 import csv
+import hashlib
 import io
 import json
 import re
@@ -21,8 +22,18 @@ RUNS_DIR = Path("runs")
 
 
 def _slug(text: str) -> str:
+    """
+    File name for a run label.
+
+    The readable part keeps Latin letters and digits only, so every Urdu
+    label used to become "lecture" and overwrite the last one. A short hash
+    of the full label keeps them apart. Saving the same label again still
+    replaces that run, which is what re-saving means.
+    """
     cleaned = re.sub(r"[^a-zA-Z0-9]+", "-", text.strip().lower())
-    return cleaned.strip("-")[:40] or "lecture"
+    readable = cleaned.strip("-")[:40] or "lecture"
+    digest = hashlib.sha1(text.strip().encode("utf-8")).hexdigest()[:6]
+    return f"{readable}-{digest}"
 
 
 def build_run(
@@ -33,6 +44,7 @@ def build_run(
     changes: list[dict],
     duration: int | None,
     unknown: list[dict] | None = None,
+    settings: dict | None = None,
 ) -> dict:
     """
     Assemble one run record, with the comparison numbers already computed.
@@ -40,6 +52,11 @@ def build_run(
     'unknown' is the leftover Urdu vocabulary the glossary did not cover.
     Saving it is what lets the next version of the glossary be written from
     measurements instead of from memory.
+
+    'settings' records how the run was made: the path (batch or live), the
+    glossaries switched on, and fuzzy matching. Runs made differently are not
+    comparable, and without this the comparison table could not tell them
+    apart.
     """
     words = len(raw.split())
     total = sum(c["times"] for c in changes)
@@ -57,6 +74,7 @@ def build_run(
         "terms": unique_terms,
         "changes": changes,
         "unknown": unknown or [],
+        "settings": settings or {},
         "raw": raw,
         "corrected": corrected,
     }
@@ -94,6 +112,12 @@ def summary_rows(runs: list[dict]) -> list[dict]:
         {
             "Lecture": r["label"],
             "Subject": r["subject"],
+            # Runs saved before settings were recorded show blanks here.
+            "Path": r.get("settings", {}).get("path", ""),
+            "Glossaries": ", ".join(r.get("settings", {}).get("glossaries", [])),
+            "Fuzzy": {True: "on", False: "off"}.get(
+                r.get("settings", {}).get("fuzzy"), ""
+            ),
             "Seconds": r.get("duration_sec") or "",
             "Words": r["words"],
             "Corrections": r["corrections"],

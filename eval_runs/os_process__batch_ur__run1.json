@@ -1,0 +1,6 @@
+{
+  "raw": "آج ہم Operating System میں Process Management کو سمجھیں گے جب ہم کمپیوٹر میں کوئی Program رن کرتے ہیں تو Operating System اس رننگ Program کو ایک Process کی فوم میں Manage کرتا ہے ایک ٹائم پر Multiple Processes Memory میں Available ہو سکتے ہیں لیکن CPU Different Processes کو تھوڑا تھوڑی Execution ٹائم دیتا ہے اس Process کو CPU Scheduling کہتے ہیں Scheduling کے Different Algorithms ہیں جیسے First Come First Served Shortest Show First اور Round Robin. Round Robin میں ہر پروسیس کو ایک Specific Time Quantum دیا جاتا ہے۔ اگر پروسسیس کیون ٹائم میں کمپلیٹ نہ ہوں تو اسے کیوں کے اینڈ میں بھیج دیا جاتے ہیں۔ Operating System کا ایک اور important Concept Deadlock ہے۔ Deadlock تب ہوتا ہے جب دو یا زیادہ پروسسسیس ایک دوسرے کے Resources کا ویٹ کر رہے ہوتے ہیں اور کوئی بھی پروسس کنٹینیو نہیں کر پاتا۔",
+  "turns": [],
+  "language": "ur",
+  "audio": "os_process.mp4"
+}

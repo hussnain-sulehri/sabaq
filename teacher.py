@@ -28,7 +28,11 @@ Model handling:
   of twenty daily requests on nothing.
 - When a model runs out, it is marked exhausted and the next model is used,
   then the next provider. The mark expires, so the app recovers on its own.
+- A model the key cannot use (retired, unknown, or refusing the request
+  format) is skipped the same way. Only a bad key stops a provider outright,
+  because no other model can fix that.
 - GEMINI_MODEL and GROQ_MODEL pin one model per provider and skip selection.
+  A pinned model that is spent is reported, not called again.
 """
 
 import json
@@ -80,11 +84,27 @@ GEMINI_MODELS = [
 # exactly the failure the prompts exist to prevent, so it goes last.
 GROQ_MODELS = [
     "openai/gpt-oss-120b",
+    # Groq's current id, then the older one for keys that still list it.
+    # The listing call drops whichever this key cannot see.
+    "moonshotai/kimi-k2-instruct-0905",
     "moonshotai/kimi-k2-instruct",
     "llama-3.3-70b-versatile",
     "openai/gpt-oss-20b",
     "llama-3.1-8b-instant",
 ]
+
+# Groq accepts json_schema only on these models (Groq structured outputs
+# documentation, September 2026). Any other model answers a json_schema
+# request with a 400, so it is sent JSON object mode, with the schema in the
+# prompt instead. Without this, the fallback stopped at llama-3.3-70b.
+GROQ_SCHEMA_MODELS = frozenset({
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
+    "openai/gpt-oss-safeguard-20b",
+    "moonshotai/kimi-k2-instruct-0905",
+    "meta-llama/llama-4-maverick-17b-128e-instruct",
+    "meta-llama/llama-4-scout-17b-16e-instruct",
+})
 
 PREFERRED_MODELS = {GEMINI: GEMINI_MODELS, GROQ: GROQ_MODELS}
 MODEL_OVERRIDE_KEY = {GEMINI: "GEMINI_MODEL", GROQ: "GROQ_MODEL"}
@@ -98,6 +118,17 @@ GEMINI_COOLDOWN_SEC = 60 * 60
 # the API sends one.
 GROQ_COOLDOWN_SEC = 60
 GROQ_DAILY_COOLDOWN_SEC = 60 * 60
+
+# Gemini's free tier has per-minute limits as well as the daily one. A
+# per-minute trip, such as notes followed quickly by a question, used to put
+# the model aside for an hour. The error names the quota it hit and usually
+# says how long to wait, so both are read.
+GEMINI_MINUTE_COOLDOWN_SEC = 60
+
+# A model this key cannot use at all: retired, renamed, or never granted.
+# Long, because it will not start working in a minute, but still expiring,
+# because a key's access does change.
+MISSING_MODEL_COOLDOWN_SEC = 24 * 60 * 60
 
 _CLIENTS: dict[str, object] = {}
 _MODEL_CACHE: dict[str, str] = {}
@@ -129,7 +160,10 @@ def _client(provider: str, api_key: str):
         elif provider == GROQ:
             if Groq is None:
                 raise RuntimeError("The groq package is not installed.")
-            _CLIENTS[scope] = Groq(api_key=api_key)
+            # The Groq SDK retries a 429 twice by default, before this module
+            # sees it. Quota handling here moves to another model instead,
+            # so the SDK's own retries only add delay.
+            _CLIENTS[scope] = Groq(api_key=api_key, max_retries=0)
         else:
             raise ValueError(f"Unknown provider: {provider}")
 
@@ -152,10 +186,12 @@ def _exhausted_models(scope: str) -> set[str]:
     return set(live)
 
 
-def _mark_exhausted(scope: str, model: str, seconds: float) -> None:
+def _mark_exhausted(
+    scope: str, model: str, seconds: float, reason: str = "rate limited"
+) -> None:
     _EXHAUSTED.setdefault(scope, {})[model] = time.time() + seconds
     _MODEL_CACHE.pop(scope, None)
-    log.warning("%s is rate limited for %.0fs, moving on", model, seconds)
+    log.warning("%s is %s, set aside for %.0fs", model, reason, seconds)
 
 
 def _retry_after(error: Exception) -> float | None:
@@ -183,6 +219,29 @@ def _retry_after(error: Exception) -> float | None:
     return None
 
 
+def _gemini_cooldown(error: Exception) -> float:
+    """
+    Read Gemini's quota error: which quota was hit, and the wait it asks for.
+
+    The error text carries the API's JSON, including a quotaId such as
+    GenerateRequestsPerDayPerProjectPerModel-FreeTier and, for short limits,
+    a RetryInfo retryDelay such as '39s'.
+    """
+    text = str(error)
+
+    if "PerDay" in text:
+        return GEMINI_COOLDOWN_SEC
+
+    delay = re.search(r"retryDelay['\"]?\s*[:=]\s*['\"]?(\d+(?:\.\d+)?)s", text)
+    if delay:
+        return max(1.0, float(delay.group(1)))
+
+    if "PerMinute" in text:
+        return GEMINI_MINUTE_COOLDOWN_SEC
+
+    return GEMINI_COOLDOWN_SEC
+
+
 def _cooldown(provider: str, error: Exception) -> float:
     """How long to leave a rate limited model alone."""
     asked = _retry_after(error)
@@ -190,7 +249,7 @@ def _cooldown(provider: str, error: Exception) -> float:
         return asked
 
     if provider == GEMINI:
-        return GEMINI_COOLDOWN_SEC
+        return _gemini_cooldown(error)
 
     text = str(error).lower()
     daily = "per day" in text or "rpd" in text or "tpd" in text
@@ -236,28 +295,39 @@ def _listed_models(provider: str, api_key: str) -> set[str]:
     return names
 
 
-def get_available_model(provider: str, api_key: str) -> str:
+def get_available_model(
+    provider: str, api_key: str, skip: frozenset[str] | set[str] = frozenset()
+) -> str:
     """
     Pick a model for this provider and key.
 
     Order: an explicit override, then the cached choice, then the first
-    preferred model that is listed and not already rate limited.
+    preferred model that is listed and not already rate limited. 'skip'
+    holds models that already failed during the current request.
     """
-    override = get_setting(MODEL_OVERRIDE_KEY[provider], "").strip()
-    if override:
-        return override
-
     scope = _scope(provider, api_key)
     exhausted = _exhausted_models(scope)
 
+    override = get_setting(MODEL_OVERRIDE_KEY[provider], "").strip()
+    if override:
+        # Returning a spent pin would call it again on every switch, and on
+        # Gemini each of those calls is one of twenty a day.
+        if override in exhausted or override in skip:
+            raise RuntimeError(
+                f"{MODEL_OVERRIDE_KEY[provider]} pins {override}, which is "
+                "unavailable right now. Clear the pin to let another model "
+                "answer."
+            )
+        return override
+
     cached = _MODEL_CACHE.get(scope)
-    if cached and cached not in exhausted:
+    if cached and cached not in exhausted and cached not in skip:
         return cached
 
     listed = _listed_models(provider, api_key)
 
     for model in PREFERRED_MODELS[provider]:
-        if model in exhausted:
+        if model in exhausted or model in skip:
             continue
         # When listing failed we have no list to check against, so try anyway.
         if listed and model not in listed:
@@ -361,16 +431,23 @@ def _max_switches(provider: str) -> int:
     return len(PREFERRED_MODELS[provider]) + 1
 
 
-# Retrying these never helps.
-PERMANENT_CODES = {400, 401, 403, 404}
-PERMANENT_MARKERS = (
-    "NOT_FOUND",
+# A bad key. No other model on this provider can help.
+AUTH_CODES = {401, 403}
+AUTH_MARKERS = (
     "PERMISSION_DENIED",
-    "INVALID_ARGUMENT",
     "UNAUTHENTICATED",
-    "API key",
+    "API key",            # Gemini: 400 INVALID_ARGUMENT "API key not valid"
+    "API_KEY_INVALID",
     "invalid_api_key",
 )
+
+# This model cannot serve this request. Another model may.
+MISSING_MODEL_CODES = {404}
+MISSING_MODEL_MARKERS = ("NOT_FOUND", "model_not_found", "model_decommissioned")
+BAD_REQUEST_CODES = {400, 413, 422}
+
+# The server, not the request. Retried, then another model is tried.
+SERVER_CODES = {500, 502, 503, 504}
 
 QUOTA_CODES = {429}
 QUOTA_MARKERS = ("RESOURCE_EXHAUSTED", "rate_limit_exceeded")
@@ -399,13 +476,24 @@ def _is_quota(error: Exception) -> bool:
     return any(marker in str(error) for marker in QUOTA_MARKERS)
 
 
-def _is_permanent(error: Exception) -> bool:
-    code = _status_code(error)
-    if code in PERMANENT_CODES:
+def _is_auth(error: Exception) -> bool:
+    if _status_code(error) in AUTH_CODES:
         return True
-    if code is not None:
-        return False
-    return any(marker in str(error) for marker in PERMANENT_MARKERS)
+    return any(marker in str(error) for marker in AUTH_MARKERS)
+
+
+def _is_missing_model(error: Exception) -> bool:
+    if _status_code(error) in MISSING_MODEL_CODES:
+        return True
+    return any(marker in str(error) for marker in MISSING_MODEL_MARKERS)
+
+
+def _is_bad_request(error: Exception) -> bool:
+    return _status_code(error) in BAD_REQUEST_CODES
+
+
+def _is_server(error: Exception) -> bool:
+    return _status_code(error) in SERVER_CODES
 
 
 def _generate(provider: str, api_key: str, model: str, prompt: str, schema) -> str:
@@ -427,8 +515,11 @@ def _generate(provider: str, api_key: str, model: str, prompt: str, schema) -> s
     # Groq, OpenAI-shaped. Best-effort mode rather than strict: strict needs
     # every field required with additionalProperties false and is only on
     # select models, and the Groq model list changes often.
-    response_format = (
-        {
+    messages = [{"role": "user", "content": prompt}]
+    response_format = None
+
+    if schema and model in GROQ_SCHEMA_MODELS:
+        response_format = {
             "type": "json_schema",
             "json_schema": {
                 "name": "study_notes",
@@ -436,13 +527,23 @@ def _generate(provider: str, api_key: str, model: str, prompt: str, schema) -> s
                 "schema": schema[GROQ],
             },
         }
-        if schema
-        else None
-    )
+    elif schema:
+        # JSON object mode guarantees JSON but not its shape, so the shape
+        # goes in the prompt. The prompts list what to write, not the key
+        # names, and a reply with other keys would parse and then be empty.
+        response_format = {"type": "json_object"}
+        messages.insert(0, {
+            "role": "system",
+            "content": (
+                "Reply with one JSON object that follows this JSON Schema "
+                "exactly, using these key names:\n"
+                + json.dumps(schema[GROQ], ensure_ascii=False)
+            ),
+        })
 
     completion = _client(GROQ, api_key).chat.completions.create(
         model=model,
-        messages=[{"role": "user", "content": prompt}],
+        messages=messages,
         response_format=response_format,
         temperature=0.3,
     )
@@ -451,17 +552,36 @@ def _generate(provider: str, api_key: str, model: str, prompt: str, schema) -> s
 
 def _ask_provider(provider: str, api_key: str, prompt: str, schema) -> tuple[str, str]:
     """
-    Send a prompt to one provider, moving to the next model when one is
-    rate limited.
+    Send a prompt to one provider, moving to the next model when one cannot
+    answer.
 
     A quota error is never retried on the same model. On Gemini that would
     spend two more of the twenty daily requests to learn nothing.
+
+    What each failure does:
+    - quota        set the model aside for its cooldown, try the next
+    - bad key      stop: no other model on this provider can help
+    - no model     set it aside for a day, try the next
+    - bad request  skip it for this request only, try the next (a Groq model
+                   refusing the request format, or a reply that failed
+                   Groq's schema check)
+    - server       retried with backoff, then the next model
+    - network      retried with backoff, then give up on the provider,
+                   since another model on the same connection fares no better
     """
     last_error: Exception | None = None
+    scope = _scope(provider, api_key)
+    skip: set[str] = set()
 
     for _ in range(_max_switches(provider)):
-        model = get_available_model(provider, api_key)
-        scope = _scope(provider, api_key)
+        try:
+            model = get_available_model(provider, api_key, skip)
+        except RuntimeError:
+            # Nothing left to try. The last real failure explains more than
+            # "no model available" does.
+            if last_error:
+                raise last_error
+            raise
 
         for attempt in range(MAX_TRANSIENT_ATTEMPTS):
             try:
@@ -473,10 +593,23 @@ def _ask_provider(provider: str, api_key: str, prompt: str, schema) -> tuple[str
 
                 if _is_quota(error):
                     _mark_exhausted(scope, model, _cooldown(provider, error))
-                    break  # next model, without spending a retry
+                    break
 
-                if _is_permanent(error):
+                if _is_auth(error):
                     raise
+
+                if _is_missing_model(error):
+                    _mark_exhausted(
+                        scope, model, MISSING_MODEL_COOLDOWN_SEC,
+                        "not available to this key",
+                    )
+                    break
+
+                if _is_bad_request(error):
+                    log.warning("%s refused the request: %s", model, error)
+                    skip.add(model)
+                    _MODEL_CACHE.pop(scope, None)
+                    break
 
                 log.warning(
                     "Transient failure on %s, attempt %s: %s",
@@ -489,7 +622,12 @@ def _ask_provider(provider: str, api_key: str, prompt: str, schema) -> tuple[str
                 if attempt < MAX_TRANSIENT_ATTEMPTS - 1:
                     time.sleep((5 * (attempt + 1)) + random.uniform(0, 1))
         else:
-            # Ran out of retries rather than quota. Another model will not help.
+            # Retries ran out. An overloaded model is a reason to try
+            # another; a broken connection is not.
+            if last_error is not None and _is_server(last_error):
+                skip.add(model)
+                _MODEL_CACHE.pop(scope, None)
+                continue
             break
 
     raise last_error if last_error else RuntimeError(f"{provider} request failed")
@@ -579,6 +717,24 @@ NOTES_SCHEMA = {
         "required": ["summary", "points", "questions"],
     },
 }
+
+
+def _as_list(value) -> list:
+    """A list field from the reply. A lone string is one item, not letters."""
+    if isinstance(value, list):
+        return value
+    if isinstance(value, str) and value.strip():
+        return [value]
+    return []
+
+
+def _as_bool(value) -> bool:
+    """A boolean field. Non-strict schema mode can return "false" as text."""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in ("true", "yes", "1")
+    return bool(value)
 
 
 def _parse(text: str):
@@ -694,7 +850,7 @@ TRANSCRIPT:
         "summary": str(data.get("summary", "")).strip(),
         "points": [
             str(point).strip()
-            for point in data.get("points", [])
+            for point in _as_list(data.get("points"))
             if str(point).strip()
         ],
         "questions": [
@@ -702,7 +858,7 @@ TRANSCRIPT:
                 "question": str(item.get("question", "")).strip(),
                 "answer": str(item.get("answer", "")).strip(),
             }
-            for item in data.get("questions", [])
+            for item in _as_list(data.get("questions"))
             if isinstance(item, dict) and str(item.get("question", "")).strip()
         ],
     }
@@ -781,6 +937,6 @@ QUESTION:
     return {
         "backend": backend,
         "answer": str(data.get("answer", "")).strip(),
-        "in_lecture": bool(data.get("in_lecture", False)),
+        "in_lecture": _as_bool(data.get("in_lecture", False)),
         "basis": str(data.get("basis", "")).strip(),
     }

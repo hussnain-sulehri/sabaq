@@ -1,4 +1,6 @@
-streamlit
+# 1.49 or later: st.audio_input for "Ask the lecture", and st.dataframe(width=)
+# replacing use_container_width, which is past its announced removal.
+streamlit>=1.49
 assemblyai
 python-dotenv
 google-genai

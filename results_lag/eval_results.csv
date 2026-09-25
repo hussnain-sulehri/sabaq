@@ -1,0 +1,8 @@
+lecture,subject,speaker,split,path,run,words,turns,core_expected,core_model,core_glossary,core_missed,core_recall,general_recall,inserted,wrong,precision,devanagari
+cloud_docker,Cloud computing,S4,new speaker · new subject,live,1,161,6,26,22,0,4,0.846,0.625,0,0,,True
+db_keys,Database,S1,same speaker · new subject,live,1,164,13,34,12,0,22,0.353,0.25,3,1,0.667,True
+ml_overfitting,AI / ML,S1,harvested,live,1,158,12,26,6,20,0,1.0,1.0,25,0,1.0,True
+os_process,Operating systems,S2,new speaker · new subject,live,1,145,7,29,16,0,13,0.552,1.0,0,0,,True
+se_sdlc,Software engineering,S3,new speaker · new subject,live,1,152,11,26,16,0,10,0.615,0.625,0,0,,True
+sec_phishing,Cybersecurity,S4,new speaker · new subject,live,1,177,5,26,22,0,4,0.846,0.769,0,0,,True
+web_html_css,Web development,S1,same speaker · new subject,live,1,148,12,31,7,0,24,0.226,0.333,2,0,1.0,True

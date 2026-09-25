@@ -1,0 +1,6 @@
+{
+  "raw": "آج ہم Software Engineering میں SDLC Software Development Life Cycle کیا ہوتا ہے اس کو سمجھیں گے Software Development صرف Coding کا نام نہیں ہے اس میں جو ہے سب سے پہلے ہم Requirement کو Gather کرتے ہیں Then Client جو سمجھا چاہتے ہیں کہ وہ Actual System کو کیا کرنا چاہیے اس کے بعد جو ہے ایک Proper System Design ہوتا ہے پھر Developers Coding کرتا ہے اور Development اس کے بعد Software کی Proper Testing کرتا ہے جس کے لیے تین Phase ہوتے ہیں unit testing, integration testing اور system testing اگر کوئی bug ملتا ہے تو developer اسے fix کر دیتا ہے اور application کو جو ہے دوبارہ test کے لیے دے دیا جاتا ہے Modern software teams جو ہے sometimes agile methodology follow کرتی ہیں جہاں project کو small sprints میں divide کرتے ہیں Code management کے لیے developers جو ہیں وہ git branches اور pull request اور variant control use کرتے ہیں",
+  "turns": [],
+  "language": "ur",
+  "audio": "se_sdlc.mp4"
+}

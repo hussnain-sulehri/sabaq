@@ -1,0 +1,80 @@
+{
+  "raw": "आज हम operating system में process management को समझेंगे जब हम computer मे कोई program run करते हैं तो operating system उस training program को एक प्रोसेस की फॉम में मैनिज करता है एक टाइम पर मल्टिबल पुरसेशिस मैमरी मे अवेलेबर हो सकते हैं लेकिन cpu डिफ्रेंट पोस्य को थोड़ा -थोरा एग्जीक्यूशन ट्राईम देता है इस पिर्षेस्स को cpu स्केजूलिंग कहते हैं स्केजुलिंग की डिफरेंट एल्चाइब अलिगोरीथम्स हैं जैसे first come first serve shortest go first or round robin round ribbon में हर process को एक specific time quantum दिया जता है अगर processes की one time मे complete ना हूँ तो उसे q के end मे भेश दीया operating system का एक और important concept deadlock है deadlock तब होता है जब दो यह ज्यादा processes एंक दूसरे के resources का wait कर रहे होتी है और कोई भी प्रसेस कंटिनू नहीं कर पाता",
+  "turns": [
+    {
+      "order": 0,
+      "text": "आज हम operating system में process management को समझेंगे जब हम computer मे कोई program run करते हैं",
+      "language": "en",
+      "confidence": 0.661195,
+      "received_at": 12.6,
+      "audio_at": 8.6,
+      "audio_end": 7.4,
+      "lag": 1.1
+    },
+    {
+      "order": 1,
+      "text": "तो operating system उस training program को एक",
+      "language": "en",
+      "confidence": 0.508779,
+      "received_at": 15.6,
+      "audio_at": 11.6,
+      "audio_end": 10.4,
+      "lag": 1.2
+    },
+    {
+      "order": 2,
+      "text": "प्रोसेस की फॉम में मैनिज करता है एक टाइम पर मल्टिबल पुरसेशिस मैमरी मे अवेलेबर हो सकते हैं लेकिन cpu डिफ्रेंट पोस्य को थोड़ा -थोरा एग्जीक्यूशन ट्राईम देता है इस पिर्षेस्स को cpu स्केजूलिंग कहते हैं स्केजुलिंग की डिफरेंट एल्चाइब",
+      "language": "hi",
+      "confidence": 1.0,
+      "received_at": 31.8,
+      "audio_at": 27.8,
+      "audio_end": 25.8,
+      "lag": 1.9
+    },
+    {
+      "order": 3,
+      "text": "अलिगोरीथम्स हैं जैसे first come first serve shortest go first or round robin",
+      "language": "en",
+      "confidence": 0.405033,
+      "received_at": 36.7,
+      "audio_at": 32.7,
+      "audio_end": 31.3,
+      "lag": 1.4
+    },
+    {
+      "order": 4,
+      "text": "round ribbon में हर process को एक specific time quantum दिया जता है अगर processes की one time मे complete ना हूँ तो उसे q के end मे भेश दीया",
+      "language": "en",
+      "confidence": 0.701574,
+      "received_at": 46.7,
+      "audio_at": 42.7,
+      "audio_end": 40.9,
+      "lag": 1.9
+    },
+    {
+      "order": 5,
+      "text": "operating system का एक और important concept deadlock है deadlock तब होता है जब दो यह ज्यादा processes एंक दूसरे के resources का wait कर रहे होتी है",
+      "language": "en",
+      "confidence": 0.999833,
+      "received_at": 56.4,
+      "audio_at": 52.4,
+      "audio_end": 51.0,
+      "lag": 1.5
+    },
+    {
+      "order": 6,
+      "text": "और कोई भी प्रसेस कंटिनू नहीं कर पाता",
+      "language": "hi",
+      "confidence": 0.887626,
+      "received_at": 61.5,
+      "audio_at": 53.5,
+      "audio_end": 53.5,
+      "lag": 4.1
+    }
+  ],
+  "lag": 1.5,
+  "audio_sent_sec": 53.5,
+  "server_audio_sec": 54.0,
+  "notices": [],
+  "audio": "os_process.mp4"
+}

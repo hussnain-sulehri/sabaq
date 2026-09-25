@@ -4,7 +4,9 @@ repeated runs, with the glossary frozen first.
 
     python evaluate.py freeze
     python evaluate.py import runs/overfitting.json ml_overfitting
-    python evaluate.py transcribe --audio lectures --paths batch live --runs 2
+    python evaluate.py transcribe --audio lectures --paths batch --runs 2
+    python evaluate.py transcribe --audio lectures --paths live --runs 3
+    python evaluate.py transcribe --audio lectures --paths batch_ur --runs 2
     python evaluate.py score
 
 Audio files are found as lectures/<lecture_id>.<mp3|wav|m4a|mp4>, using the
@@ -30,17 +32,21 @@ import hashlib
 import json
 import os
 import re
-import statistics
 import sys
 import time
 from pathlib import Path
 
 from ground_truth import ALIASES, LECTURES
-from normalizer import GLOSSARY, clean_transcript, unknown_terms
+from normalizer import (
+    GLOSSARY, GUARDS, STOPWORDS, WORD_CHARS, clean_transcript, unknown_terms,
+)
 
-CACHE = Path("eval_runs")
-RESULTS = Path("results")
-FROZEN = RESULTS / "glossary_frozen.json"
+# Overridable, so new measurements can be kept apart from the published set:
+# the live lag runs are in eval_runs_lag/ and results_lag/.
+CACHE = Path(os.environ.get("SABAQ_EVAL_RUNS", "eval_runs"))
+RESULTS = Path(os.environ.get("SABAQ_RESULTS", "results"))
+# The freeze always comes from the published results, wherever output goes.
+FROZEN = Path("results") / "glossary_frozen.json"
 AUDIO_EXT = (".mp3", ".wav", ".m4a", ".mp4")
 
 # Streaming handshakes time out now and then. Retry only those.
@@ -57,30 +63,81 @@ def glossary_hash() -> str:
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:12]
 
 
+def matcher_hash() -> str:
+    """
+    The matching rules, apart from the glossary itself.
+
+    The glossary hash alone let the word-boundary class change without
+    tripping the freeze, and that change alters what a variant matches.
+    Kept as a second hash so the original glossary hash, and every result
+    recorded against it, stays valid.
+    """
+    blob = json.dumps(
+        {"guards": GUARDS, "word_chars": WORD_CHARS,
+         "stopwords": sorted(STOPWORDS)},
+        ensure_ascii=False, sort_keys=True,
+    )
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:12]
+
+
 def check_frozen(allow_changed: bool) -> str:
     current = glossary_hash()
     if not FROZEN.exists():
         print("WARNING: glossary not frozen. Run `python evaluate.py freeze` "
               "before transcribing held-out lectures.")
         return current
-    frozen = json.loads(FROZEN.read_text(encoding="utf-8"))["hash"]
-    if frozen != current and not allow_changed:
+    frozen = json.loads(FROZEN.read_text(encoding="utf-8"))
+    changed = []
+    if frozen["hash"] != current:
+        changed.append(f"glossary {frozen['hash']} -> {current}")
+    if "matcher_hash" not in frozen:
+        print("NOTE: this freeze predates the matcher hash, so the matching "
+              "rules are not checked. `python evaluate.py freeze` adds it "
+              "without touching the glossary hash.")
+    elif frozen["matcher_hash"] != matcher_hash():
+        changed.append(f"matching rules {frozen['matcher_hash']} -> {matcher_hash()}")
+    if changed and not allow_changed:
         sys.exit(
-            f"Glossary changed since it was frozen ({frozen} -> {current}). "
-            "Scores on held-out lectures would no longer be held out. Revert "
+            f"Changed since the freeze: {'; '.join(changed)}. Scores on "
+            "held-out lectures would no longer be held out. Revert "
             "normalizer.py, or pass --allow-changed-glossary and report it."
         )
     return current
 
 
-def cmd_freeze(_args) -> None:
+def cmd_freeze(args) -> None:
+    """
+    Record the glossary and matching rules.
+
+    An existing freeze is extended, never silently replaced: if the glossary
+    still matches, only the matcher hash is added or refreshed. Replacing a
+    freeze whose glossary has changed needs --force, and should be reported.
+    """
     RESULTS.mkdir(exist_ok=True)
+
+    if FROZEN.exists() and not args.force:
+        frozen = json.loads(FROZEN.read_text(encoding="utf-8"))
+        if frozen["hash"] != glossary_hash():
+            sys.exit(
+                f"Already frozen at {frozen['hash']}, and the glossary has "
+                f"changed since ({glossary_hash()}). Pass --force to re-freeze, "
+                "and report that the held-out lectures are no longer held out."
+            )
+        frozen["matcher_hash"] = matcher_hash()
+        FROZEN.write_text(json.dumps(frozen, ensure_ascii=False, indent=2),
+                          encoding="utf-8")
+        print(f"Glossary still {frozen['hash']}. Matcher hash recorded: "
+              f"{frozen['matcher_hash']}. Commit results/ now.")
+        return
+
     FROZEN.write_text(
-        json.dumps({"hash": glossary_hash(), "glossary": GLOSSARY},
+        json.dumps({"hash": glossary_hash(), "matcher_hash": matcher_hash(),
+                    "glossary": GLOSSARY},
                    ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
-    print(f"Glossary frozen at {glossary_hash()}. Commit results/ now.")
+    print(f"Glossary frozen at {glossary_hash()}, matching rules at "
+          f"{matcher_hash()}. Commit results/ now.")
 
 
 # -----------------------------
@@ -116,11 +173,21 @@ def _api_key() -> str:
     return key
 
 
-def _batch(key: str, audio: Path) -> dict:
+def _batch(key: str, audio: Path, language: str | None = None) -> dict:
+    """
+    Batch transcription. language=None lets the API detect the language,
+    which is what the app does. language="ur" forces Urdu: the detector
+    wrote the three new speakers entirely in Devanagari, so forcing it is
+    the obvious thing to test.
+    """
     import assemblyai as aai
 
     aai.settings.api_key = key
-    config = aai.TranscriptionConfig(language_detection=True)
+    config = (
+        aai.TranscriptionConfig(language_code=language)
+        if language
+        else aai.TranscriptionConfig(language_detection=True)
+    )
     result = aai.Transcriber().transcribe(str(audio), config=config)
     if result.status == aai.TranscriptStatus.error:
         raise RuntimeError(result.error)
@@ -136,7 +203,17 @@ def _live(key: str, audio: Path) -> dict:
     turns, _, error = session.snapshot()
     if error:
         raise RuntimeError(error)
-    return {"raw": raw, "turns": turns, "lag": session.lag()}
+    # Server notices and the audio the server says it received are saved
+    # with the transcript. A run that stops after its first turn with no
+    # error cannot be diagnosed afterwards without them.
+    return {
+        "raw": raw,
+        "turns": turns,
+        "lag": session.lag(),
+        "audio_sent_sec": session.audio_sent(),
+        "server_audio_sec": session.server_audio_sec,
+        "notices": list(session.notices),
+    }
 
 
 def find_audio(folder: Path, lecture: str) -> Path | None:
@@ -169,7 +246,12 @@ def cmd_transcribe(args) -> None:
                 data = None
                 for attempt in range(1, CONNECT_ATTEMPTS + 1):
                     try:
-                        data = _batch(key, audio) if path == "batch" else _live(key, audio)
+                        if path == "batch":
+                            data = _batch(key, audio)
+                        elif path == "batch_ur":
+                            data = _batch(key, audio, language="ur")
+                        else:
+                            data = _live(key, audio)
                         break
                     except Exception as error:  # keep going; one bad file is not the run
                         # Retrying a failed connection is not re-rolling a
@@ -207,7 +289,11 @@ def _matchers(lecture: dict) -> list[tuple[re.Pattern, str, str]]:
 
     compiled = []
     for surface, term, tier in forms:
-        body = r"\s+".join(re.escape(part) for part in surface.split())
+        # Spaces and hyphens are interchangeable, so "two-factor",
+        # "two factor" and "two -factor" all match one term.
+        body = r"[\s-]+".join(
+            re.escape(part) for part in re.split(r"[\s-]+", surface) if part
+        )
         pattern = re.compile(
             rf"(?<![A-Za-z0-9]){body}(?:s|es)?(?![A-Za-z0-9])", re.IGNORECASE
         )
@@ -417,7 +503,10 @@ def main() -> None:
     parser.add_argument("--allow-changed-glossary", action="store_true")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    sub.add_parser("freeze").set_defaults(func=cmd_freeze)
+    frz = sub.add_parser("freeze")
+    frz.add_argument("--force", action="store_true",
+                     help="replace a freeze whose glossary has changed")
+    frz.set_defaults(func=cmd_freeze)
 
     imp = sub.add_parser("import")
     imp.add_argument("file")
@@ -428,7 +517,7 @@ def main() -> None:
     tr = sub.add_parser("transcribe")
     tr.add_argument("--audio", default="lectures")
     tr.add_argument("--paths", nargs="+", default=["batch", "live"],
-                    choices=["batch", "live"])
+                    choices=["batch", "batch_ur", "live"])
     tr.add_argument("--runs", type=int, default=2)
     tr.set_defaults(func=cmd_transcribe)
 

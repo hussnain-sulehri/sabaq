@@ -25,6 +25,8 @@ import difflib
 import re
 from collections import Counter
 
+from subject_glossaries import SUBJECT_GLOSSARIES
+
 # Unicode blocks. Arabic covers Urdu. Devanagari appears when the streaming
 # model decides a turn is Hindi. Observed Devanagari spellings are in the
 # glossary and match through the same pass (finding 16); unseen ones are
@@ -155,7 +157,9 @@ STOPWORDS = frozenset(
 )
 
 
-def _compile_pairs() -> list[tuple[str, str, re.Pattern]]:
+def _compile_pairs(
+    glossary: dict[str, list[str]] | None = None,
+) -> list[tuple[str, str, re.Pattern]]:
     """
     Flatten the glossary into (variant, english, pattern) triples, longest
     variant first.
@@ -168,11 +172,12 @@ def _compile_pairs() -> list[tuple[str, str, re.Pattern]]:
     stops a variant matching inside a longer Urdu or Devanagari word without
     needing a separate tokenizer.
     """
-    flat = [
+    glossary = GLOSSARY if glossary is None else glossary
+    flat = list({
         (variant, english)
-        for english, variants in GLOSSARY.items()
+        for english, variants in glossary.items()
         for variant in variants
-    ]
+    })
     flat.sort(key=lambda pair: len(pair[0]), reverse=True)
 
     def pattern(variant: str) -> re.Pattern:
@@ -189,6 +194,28 @@ def _compile_pairs() -> list[tuple[str, str, re.Pattern]]:
 
 
 PAIRS = _compile_pairs()
+
+
+def glossary_for(subjects: tuple[str, ...] | list[str] = ()) -> dict[str, list[str]]:
+    """The AI glossary plus the chosen starter glossaries."""
+    merged = {english: list(variants) for english, variants in GLOSSARY.items()}
+    for subject in subjects:
+        for english, variants in SUBJECT_GLOSSARIES[subject].items():
+            merged.setdefault(english, []).extend(variants)
+    return merged
+
+
+_PAIR_CACHE: dict[tuple, list] = {}
+
+
+def _pairs(subjects) -> list[tuple[str, str, re.Pattern]]:
+    """Compiled pairs for a glossary choice, built once and kept."""
+    if not subjects:
+        return PAIRS
+    key = tuple(sorted(subjects))
+    if key not in _PAIR_CACHE:
+        _PAIR_CACHE[key] = _compile_pairs(glossary_for(subjects))
+    return _PAIR_CACHE[key]
 
 # every known variant, used by the fuzzy pass
 ALL_VARIANTS = [variant for variant, _, _ in PAIRS]
@@ -209,10 +236,13 @@ _LATIN = re.compile(r"[A-Za-z]")
 _WORD_RUN = re.compile(rf"[{ARABIC}{DEVANAGARI}]+")
 
 
-def normalize(text: str) -> tuple[str, list[dict]]:
+def normalize(
+    text: str, subjects: tuple[str, ...] | list[str] = ()
+) -> tuple[str, list[dict]]:
     """
-    Replace known Urdu-script spellings with the correct English term.
+    Replace known Urdu-script and Devanagari spellings with the English term.
 
+    With no subjects this is the frozen AI glossary, exactly as evaluated.
     Returns the corrected text and a log of what was changed, so the
     corrections can be shown to the user instead of happening silently.
     """
@@ -222,7 +252,7 @@ def normalize(text: str) -> tuple[str, list[dict]]:
     corrected = text
     changes = []
 
-    for variant, english, pattern in PAIRS:
+    for variant, english, pattern in _pairs(subjects):
         corrected, count = pattern.subn(english, corrected)
         if count:
             changes.append(
@@ -283,9 +313,17 @@ def fuzzy_pass(
     return corrected, changes
 
 
-def clean_transcript(text: str, use_fuzzy: bool = True) -> tuple[str, list[dict]]:
-    """Run both passes and return the corrected text with a combined change log."""
-    corrected, changes = normalize(text)
+def clean_transcript(
+    text: str,
+    use_fuzzy: bool = True,
+    subjects: tuple[str, ...] | list[str] = (),
+) -> tuple[str, list[dict]]:
+    """
+    Run both passes and return the corrected text with a combined change log.
+
+    With no subjects this is the frozen AI glossary, exactly as evaluated.
+    """
+    corrected, changes = normalize(text, subjects)
 
     if use_fuzzy:
         corrected, fuzzy_changes = fuzzy_pass(corrected)

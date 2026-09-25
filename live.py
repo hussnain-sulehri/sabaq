@@ -22,6 +22,15 @@ Billing note: streaming is billed on how long the socket stays open, not on
 how much audio is sent. An abandoned session auto-closes after three hours
 and bills for all three. Every path here terminates in a finally block.
 
+Lag note: a turn's lag is the wall-clock time between the moment the audio
+of its last word was sent and the moment the turn arrived, read from the
+word timestamps on the turn. An earlier version subtracted "audio sent so
+far" from "time since the session opened". While audio is paced at real
+time those two differ by the connection time and nothing else, so it
+reported a constant: the same to 0.1 s on every turn of a run, anywhere from
+0.7 s to 4.1 s between runs. When a turn carries no word timestamps its lag
+is recorded as unknown rather than estimated.
+
 Threading note: the SDK dispatches events on its own read thread, and
 Streamlit widgets cannot be touched from there. Handlers only append to a
 lock-protected list. The main thread reads that list between audio chunks
@@ -30,6 +39,7 @@ and draws. Nothing in this module imports Streamlit.
 
 from __future__ import annotations
 
+import bisect
 import logging
 import queue
 import shutil
@@ -62,21 +72,41 @@ CHUNK_BYTES = SAMPLE_RATE * BYTES_PER_SAMPLE * CHUNK_MS // 1000
 # The only streaming model that supports Urdu.
 WHISPER_RT = "whisper-rt"
 
-# How long to keep listening after the audio stops.
+# How long to keep listening after the audio stops, before sending Terminate.
 #
-# Measured, not guessed: whisper-rt runs behind real time, and the lag grows
-# across a session. On a 59 second lecture the socket was closed two seconds
-# after the audio ended and 70% of the transcript was still queued on the
-# server. Waiting a fixed number of seconds cannot be right when the backlog
-# depends on the length of the recording, so the wait ends when turns stop
-# arriving instead.
-DRAIN_IDLE_SEC = 15.0
-DRAIN_MAX_SEC = 180.0
+# History: an early build closed the socket two seconds after the audio ended
+# without terminating, and lost 70% of a 59 second lecture. The fix waited
+# for 15 seconds of silence, then terminated.
+#
+# Measured afterwards, across the 20 evaluation runs with more than one turn:
+# no turn ever arrived during those 15 seconds except the last one, and in 13
+# of the 20 the last turn arrived only once Terminate had been sent. Between
+# 4% and 20% of the words arrive after the audio ends, always as that one
+# final turn. The backlog is one unfinished turn, and Terminate is what
+# releases it. A short pause is kept so a turn already on its way is not
+# raced; the cap stops a dead session holding the socket open.
+DRAIN_IDLE_SEC = 3.0
+DRAIN_MAX_SEC = 60.0
 
-# The server flushes whatever it still holds when the session is terminated.
-# Hanging up the moment Terminate is sent throws that flush away, which is
-# one candidate explanation for a missing tail.
-FLUSH_SEC = 6.0
+# Handshake time allowed per attempt. assemblyai 1.6.1 defaults to 1 second
+# (with two retries), and TCP, TLS and the WebSocket upgrade are several
+# round trips from Pakistan to the streaming host. The development network
+# saw 8 of 36 attempts time out at the handshake. The short default is the
+# likely cause, not a confirmed one: re-measure after this change.
+CONNECT_TIMEOUT_SEC = 10.0
+
+# How long disconnect(terminate=True) waits for the server's Termination
+# event, which carries the audio duration the server received. assemblyai
+# 1.6.1 defaults to 5 seconds. On the phishing lecture the event did not
+# arrive in 2 of 2 sessions while the other six lectures received it, which
+# fits a wait that is too short, though that is not confirmed. The SDK stops
+# its read thread when this runs out, so nothing can be collected afterwards:
+# the wait has to happen inside disconnect(), not after it.
+TERMINATE_TIMEOUT_SEC = 10.0
+
+# Audio the server reports receiving may trail audio sent by a fraction of a
+# second. More than this is reported as audio the server never heard.
+UNHEARD_TOLERANCE_SEC = 2.0
 
 
 # -----------------------------
@@ -145,12 +175,20 @@ def _pace(chunks: Iterator[bytes], speed: float = 1.0) -> Iterator[bytes]:
     """
     deadline = time.monotonic()
 
-    for chunk in chunks:
-        yield chunk
-        deadline += (CHUNK_MS / 1000) / speed
-        delay = deadline - time.monotonic()
-        if delay > 0:
-            time.sleep(delay)
+    try:
+        for chunk in chunks:
+            yield chunk
+            deadline += (CHUNK_MS / 1000) / speed
+            delay = deadline - time.monotonic()
+            if delay > 0:
+                time.sleep(delay)
+    finally:
+        # Closing this generator must close the source too, so an ffmpeg
+        # process behind it stops now rather than whenever the garbage
+        # collector gets to it.
+        close = getattr(chunks, "close", None)
+        if close:
+            close()
 
 
 def _wav_chunks(path: Path) -> Iterator[bytes]:
@@ -190,18 +228,21 @@ def file_chunks(
         chunks = _wav_chunks(path)
         return _pace(chunks, speed) if realtime else chunks
 
-    process = subprocess.Popen(
-        [
-            binary, "-nostdin", "-loglevel", "error",
-            "-i", str(path),
-            "-f", "s16le", "-acodec", "pcm_s16le",
-            "-ac", "1", "-ar", str(SAMPLE_RATE), "-",
-        ],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
+    command = [
+        binary, "-nostdin", "-loglevel", "error",
+        "-i", str(path),
+        "-f", "s16le", "-acodec", "pcm_s16le",
+        "-ac", "1", "-ar", str(SAMPLE_RATE), "-",
+    ]
 
     def reader() -> Iterator[bytes]:
+        # ffmpeg starts on the first read, not when this function is called.
+        # A source that is never read, because the connection failed first,
+        # then has no process behind it to hold the file open. On Windows an
+        # open file cannot be deleted, and the app deletes it right after.
+        process = subprocess.Popen(
+            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
         try:
             while True:
                 chunk = process.stdout.read(CHUNK_BYTES)
@@ -209,25 +250,44 @@ def file_chunks(
                     break
                 yield chunk
         finally:
-            # When the socket fails, reading stops before the file ends.
-            # Stop ffmpeg as well, instead of letting it fail on a closed
-            # pipe and report that as an ffmpeg error.
-            try:
-                stopped_early = process.poll() is None
-                if stopped_early:
-                    process.kill()
-                process.stdout.close()
-                code = process.wait()
-                if code != 0 and not stopped_early:
-                    log.error("ffmpeg failed: %s", process.stderr.read()[:400])
-                process.stderr.close()
-            except OSError:
-                # On Windows the handle can already be released when the
-                # generator is cleaned up late. Nothing is left to close.
-                pass
+            _stop_ffmpeg(process)
 
     chunks = reader()
     return _pace(chunks, speed) if realtime else chunks
+
+
+def _stop_ffmpeg(process: subprocess.Popen) -> None:
+    """
+    Stop ffmpeg and wait until it has exited.
+
+    Each step runs even when the one before it fails. The earlier version
+    closed the pipe before waiting, and on Windows closing the pipe can
+    raise; the wait was then skipped, ffmpeg was still exiting when the app
+    deleted the file, and the delete failed with WinError 32.
+    """
+    stopped_early = process.poll() is None
+    if stopped_early:
+        # The socket failed or the stream ended before the file did. Stop
+        # ffmpeg instead of letting it fail on a closed pipe and report that
+        # as an ffmpeg error.
+        try:
+            process.kill()
+        except OSError:
+            pass
+
+    try:
+        code = process.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+        log.error("ffmpeg did not exit within 10s")
+        code = None
+
+    for pipe in (process.stdout, process.stderr):
+        try:
+            if code not in (0, None) and not stopped_early and pipe is process.stderr:
+                log.error("ffmpeg failed: %s", pipe.read()[:400])
+            pipe.close()
+        except (OSError, ValueError):
+            pass
 
 
 def microphone_chunks(max_seconds: float) -> Iterator[bytes]:
@@ -268,6 +328,32 @@ def microphone_chunks(max_seconds: float) -> Iterator[bytes]:
 # The session
 # -----------------------------
 
+def _client_options(api_key: str) -> StreamingClientOptions:
+    """
+    Client options with the handshake and termination timeouts raised.
+
+    Older SDKs do not have these fields, and some accept unknown fields
+    silently, so the values that actually took effect are checked. Either
+    way the session still works, on the SDK's own defaults.
+    """
+    try:
+        options = StreamingClientOptions(
+            api_key=api_key,
+            connect_timeout=CONNECT_TIMEOUT_SEC,
+            terminate_timeout=TERMINATE_TIMEOUT_SEC,
+        )
+    except (TypeError, ValueError):
+        options = StreamingClientOptions(api_key=api_key)
+
+    if (getattr(options, "connect_timeout", None) != CONNECT_TIMEOUT_SEC
+            or getattr(options, "terminate_timeout", None) != TERMINATE_TIMEOUT_SEC):
+        log.warning(
+            "this assemblyai version ignores the timeout settings; handshakes "
+            "and termination use its defaults. Upgrade: pip install -U assemblyai"
+        )
+    return options
+
+
 class LiveTranscriber:
     """
     One streaming session.
@@ -300,6 +386,19 @@ class LiveTranscriber:
         self._audio_sent = 0.0
         self.phase = "idle"
 
+        # One checkpoint per chunk: seconds of audio sent so far, and the
+        # session time at which that total was reached. A turn's lag is read
+        # off these, so it is measured against when its audio actually left,
+        # whatever speed the audio was sent at.
+        self._sent_audio: list[float] = []
+        self._sent_clock: list[float] = []
+
+        # Set when the server confirms the session is over. It reports how
+        # much audio it received, which is how a stream that silently stopped
+        # being heard can be told apart from one that heard everything.
+        self._terminated = threading.Event()
+        self.server_audio_sec: float | None = None
+
         # Anything the server says about the session. Warnings were being
         # discarded, which is the wrong thing to discard while half the
         # transcript is going missing.
@@ -323,20 +422,72 @@ class LiveTranscriber:
 
             now = time.monotonic()
             self._last_turn_at = now
+            received_at = now - self._started
+
+            audio_end = self._turn_audio_end(event)
+            sent_at = self._clock_when_sent(audio_end)
+            lag = (
+                round(received_at - sent_at, 1) if sent_at is not None else None
+            )
 
             self._turns.append({
                 "order": event.turn_order,
                 "text": event.transcript.strip(),
-                "language": event.language_code,
-                "confidence": event.language_confidence,
-                # Seconds between the start of the session and this turn
-                # landing, against the seconds of audio sent by then. The
-                # difference is the lag, and it is the number that decides
-                # how long to wait at the end.
-                "received_at": round(now - self._started, 1),
+                # getattr: older SDKs have no per-turn language fields, and an
+                # AttributeError here would be raised on the read thread,
+                # where nothing reports it.
+                "language": getattr(event, "language_code", None),
+                "confidence": getattr(event, "language_confidence", None),
+                # Session time when the turn landed, and audio sent by then.
+                # Kept for comparison with earlier runs. Their difference is
+                # the connection time, not the lag (see the module notes).
+                "received_at": round(received_at, 1),
                 "audio_at": round(self._audio_sent, 1),
+                # Where the turn's last word ends in the audio, and how long
+                # after that audio was sent the turn arrived. None when the
+                # turn carries no usable word timestamps.
+                "audio_end": round(audio_end, 1) if audio_end is not None else None,
+                "lag": lag,
+                # False for the final turn released after the audio ended,
+                # which waits for the drain and would skew a short session.
+                "during_audio": self.phase == "listening",
             })
             self._partial = ""
+
+    def _turn_audio_end(self, event: TurnEvent) -> float | None:
+        """
+        Seconds into the stream where the turn's last word ends.
+
+        Word times are milliseconds from the start of the stream. A time past
+        the audio sent so far cannot be that, so it is discarded rather than
+        turned into a negative lag.
+        """
+        words = getattr(event, "words", None) or []
+        if not words:
+            return None
+
+        end_ms = getattr(words[-1], "end", None)
+        if not isinstance(end_ms, (int, float)) or end_ms <= 0:
+            return None
+
+        end = end_ms / 1000
+        if end > self._audio_sent + 0.5:
+            return None
+        return end
+
+    def _clock_when_sent(self, audio_sec: float | None) -> float | None:
+        """Session time at which the audio up to audio_sec had been sent."""
+        if audio_sec is None or not self._sent_audio:
+            return None
+        index = bisect.bisect_left(self._sent_audio, audio_sec)
+        if index >= len(self._sent_clock):
+            # Summing 0.1 s chunks drifts by a few ulps, and a word may end
+            # inside the chunk still being sent. Anything within the
+            # tolerance _turn_audio_end allows belongs to the last chunk.
+            if audio_sec - self._sent_audio[-1] > 0.5:
+                return None
+            index = len(self._sent_clock) - 1
+        return self._sent_clock[index]
 
     def _on_warning(self, _client, event: WarningEvent) -> None:
         code = getattr(event, "warning_code", "") or ""
@@ -353,10 +504,12 @@ class LiveTranscriber:
             self._error = str(error)
 
     def _on_termination(self, _client, event: TerminationEvent) -> None:
-        log.info(
-            "session closed after %ss of audio",
-            getattr(event, "audio_duration_seconds", "?"),
-        )
+        duration = getattr(event, "audio_duration_seconds", None)
+        log.info("session closed after %ss of audio", duration)
+        with self._lock:
+            if isinstance(duration, (int, float)):
+                self.server_audio_sec = float(duration)
+        self._terminated.set()
 
     # --- what the caller sees ---
 
@@ -369,13 +522,56 @@ class LiveTranscriber:
         with self._lock:
             return " ".join(turn["text"] for turn in self._turns)
 
-    def lag(self) -> float:
-        """Seconds the last turn trailed the audio it came from."""
+    def lags(self, during_audio_only: bool = True) -> list[float]:
+        """
+        Per-turn lag in seconds, for turns that carried word timestamps.
+
+        By default only turns produced while audio was playing, the measure
+        the README reports: the final turn waits for the end of the session,
+        which is a different delay. Falls back to every turn when none were
+        produced during the audio, as in a very short question.
+        """
         with self._lock:
-            if not self._turns:
-                return 0.0
-            last = self._turns[-1]
-            return round(last["received_at"] - last["audio_at"], 1)
+            timed = [t for t in self._turns if t.get("lag") is not None]
+        if during_audio_only:
+            during = [t for t in timed if t.get("during_audio", True)]
+            if during:
+                timed = during
+        return [t["lag"] for t in timed]
+
+    def lag(self) -> float | None:
+        """
+        Median seconds between a turn's last word being sent and the turn
+        arriving, over turns produced while audio played. None when no turn
+        carried word timestamps, which is reported as unknown, not as zero.
+        """
+        values = sorted(self.lags())
+        if not values:
+            return None
+        middle = len(values) // 2
+        if len(values) % 2:
+            return values[middle]
+        return round((values[middle - 1] + values[middle]) / 2, 1)
+
+    def audio_sent(self) -> float:
+        """Seconds of audio sent to the server."""
+        return round(self._audio_sent, 1)
+
+    def unheard_audio_sec(self) -> float | None:
+        """
+        Seconds of audio sent that the server says it never received.
+
+        None when the server did not report a duration. Zero when the two
+        agree within tolerance. A positive number means the stream stopped
+        being heard before the audio ended, which is one way a transcript
+        ends early with no error.
+        """
+        with self._lock:
+            server = self.server_audio_sec
+        if server is None:
+            return None
+        gap = self._audio_sent - server
+        return round(gap, 1) if gap > UNHEARD_TOLERANCE_SEC else 0.0
 
     def languages(self) -> dict[str, int]:
         """Turns per detected language. Empty when detection is off."""
@@ -411,11 +607,14 @@ class LiveTranscriber:
 
         self._started = time.monotonic()
         self._audio_sent = 0.0
+        with self._lock:
+            self._sent_audio.clear()
+            self._sent_clock.clear()
+            self.server_audio_sec = None
+        self._terminated.clear()
         self.phase = "listening"
 
-        client = StreamingClient(
-            StreamingClientOptions(api_key=self.api_key)
-        )
+        client = StreamingClient(_client_options(self.api_key))
         self._client = client
 
         # Handlers before connect: a handshake rejection is dispatched as an
@@ -427,21 +626,27 @@ class LiveTranscriber:
         client.on(StreamingEvents.Error, self._on_error)
         client.on(StreamingEvents.Termination, self._on_termination)
 
+        connected = False
+
         try:
             client.connect(parameters)
+            connected = True
 
             for chunk in chunks:
                 if self._error:
                     break
                 client.stream(chunk)
                 self._audio_sent += len(chunk) / (SAMPLE_RATE * BYTES_PER_SAMPLE)
+                with self._lock:
+                    self._sent_audio.append(self._audio_sent)
+                    self._sent_clock.append(time.monotonic() - self._started)
                 if on_update:
                     on_update()
 
-            # Most of the lecture is still queued on the server when the
-            # audio ends. Wait for turns to stop arriving rather than for a
-            # fixed number of seconds, with a cap so a dead session cannot
-            # hold the socket open and bill for it.
+            # A short pause for a turn already on its way, then Terminate,
+            # which releases the one unfinished turn the server still holds.
+            # The pause restarts when a turn lands. See DRAIN_IDLE_SEC for
+            # the measurements behind the length.
             self.phase = "draining"
             drain_started = time.monotonic()
 
@@ -451,9 +656,9 @@ class LiveTranscriber:
                     on_update()
 
                 now = time.monotonic()
-                since_turn = now - (self._last_turn_at or drain_started)
+                quiet_since = max(self._last_turn_at or 0.0, drain_started)
 
-                if since_turn >= DRAIN_IDLE_SEC:
+                if now - quiet_since >= DRAIN_IDLE_SEC:
                     break
                 if now - drain_started >= DRAIN_MAX_SEC:
                     log.warning("drain hit the %ss cap", DRAIN_MAX_SEC)
@@ -462,18 +667,26 @@ class LiveTranscriber:
         finally:
             # Always terminate. An open socket bills until it times out.
             try:
-                self.phase = "flushing"
+                self.phase = "closing"
+                # Waits up to TERMINATE_TIMEOUT_SEC for the Termination event.
+                # Once this returns the SDK's read thread has stopped, so
+                # waiting here any longer could never collect anything.
                 client.disconnect(terminate=True)
-
-                # Terminate makes the server hand back what it still holds.
-                # Collect it before the object goes away.
-                flush_until = time.monotonic() + FLUSH_SEC
-                while time.monotonic() < flush_until:
-                    time.sleep(0.25)
-                    if on_update:
-                        on_update()
+                if connected and not self._error and not self._terminated.is_set():
+                    log.warning(
+                        "no Termination event within %ss", TERMINATE_TIMEOUT_SEC
+                    )
             except Exception:
                 log.exception("disconnect failed")
+            finally:
+                # Always release the audio source, however the session ended,
+                # so the file behind it can be deleted.
+                close = getattr(chunks, "close", None)
+                if close:
+                    try:
+                        close()
+                    except Exception:
+                        log.exception("closing the audio source failed")
             self._client = None
             self.phase = "done"
 
@@ -492,7 +705,6 @@ QUESTION_SPEED = 4.0
 def transcribe_recording(api_key: str, path: str | Path) -> tuple[str, list[dict]]:
     """
     Push a short recording through the streaming socket and return its text.
-
     Used for student questions. The same socket as the lecture path, so a
     question is transcribed by the same model that heard the lecture, with
     the same language detection, and no second API surface to configure.

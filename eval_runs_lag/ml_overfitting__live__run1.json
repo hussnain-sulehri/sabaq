@@ -1,0 +1,130 @@
+{
+  "raw": "اسلام علیکم سٹوڈنس آج ہم ماشین لرننگ کا ایک بہت ایمپورٹن ٹاپک پڑھیں گے جس کا نام ہے اور فٹنگ اور فٹنگ کیا ہے دیکھیں جب ہم ایک موڈل کو ٹرین کرتے ہیں تو ہم اسے ट्रेनिंग डैटा देते हैं मोडल उस डाट से पैठरन को سیکھتا ہے پیٹرن کو لرن کرتا ہے پہٹرین کو انڈرسینڈ کرتے ہیں لیکن کبھی کبھیں موڈل اتنا زیادہ سیکھ لیتا ہے کہ وہ ٹریننگ ڈیٹا کو یاد کر لیतا ہے इसको कहते हैं overfitting ऐसी सूरत में training accuracy 90  तक चले जाती है लेकिन test accuracy 60  रह ज़ातی है इsका solution हमारे पास 3 है पहला है ज्यादा data दूसरा regularization use करें جیسے ڈروپ آؤٹ یا ایل ٹو ڑیگلوریزیشن تیسرا ہے کہ ہم ارلی سٹوپنگ یعنی کو ٹرین یعني ٹرینگ کو وقت سے پہلے روک دیں अगले lecture में हम gradient descents اور لرننگ ریٹ پر بات کریں گے کوئی سوال ہو تو آپ لوگ پلیز ابھی پوچھ لیں",
+  "turns": [
+    {
+      "order": 0,
+      "text": "اسلام علیکم سٹوڈنس آج ہم ماشین لرننگ کا ایک بہت ایمپورٹن ٹاپک",
+      "language": "ur",
+      "confidence": 0.981134,
+      "received_at": 8.6,
+      "audio_at": 6.1,
+      "audio_end": 4.8,
+      "lag": 1.0
+    },
+    {
+      "order": 1,
+      "text": "پڑھیں گے جس کا نام ہے اور فٹنگ",
+      "language": "ur",
+      "confidence": 0.99779,
+      "received_at": 11.2,
+      "audio_at": 8.7,
+      "audio_end": 7.5,
+      "lag": 1.3
+    },
+    {
+      "order": 2,
+      "text": "اور فٹنگ کیا ہے دیکھیں جب ہم ایک موڈل کو ٹرین کرتے ہیں تو ہم اسے",
+      "language": "ur",
+      "confidence": 0.99982,
+      "received_at": 16.2,
+      "audio_at": 13.8,
+      "audio_end": 12.5,
+      "lag": 1.3
+    },
+    {
+      "order": 3,
+      "text": "ट्रेनिंग डैटा देते हैं मोडल उस डाट से पैठरन को",
+      "language": "hi",
+      "confidence": 0.535952,
+      "received_at": 21.1,
+      "audio_at": 18.6,
+      "audio_end": 16.7,
+      "lag": 1.9
+    },
+    {
+      "order": 4,
+      "text": "سیکھتا ہے پیٹرن کو لرن کرتا ہے پہٹرین کو انڈرسینڈ کرتے ہیں لیکن کبھی کبھیں موڈل اتنا زیادہ",
+      "language": "ur",
+      "confidence": 0.999999,
+      "received_at": 26.4,
+      "audio_at": 23.9,
+      "audio_end": 22.5,
+      "lag": 1.5
+    },
+    {
+      "order": 5,
+      "text": "سیکھ لیتا ہے کہ وہ ٹریننگ ڈیٹا کو یاد کر لیतا ہے",
+      "language": "ur",
+      "confidence": 0.997796,
+      "received_at": 30.1,
+      "audio_at": 27.6,
+      "audio_end": 26.3,
+      "lag": 1.4
+    },
+    {
+      "order": 6,
+      "text": "इसको कहते हैं overfitting ऐसी सूरत में training accuracy 90  तक चले जाती है लेकिन test accuracy 60  रह ज़ातی है इsका solution हमारे पास 3 है पहला है ज्यादा data दूसरा regularization use करें",
+      "language": "hi",
+      "confidence": 1.0,
+      "received_at": 45.5,
+      "audio_at": 43.1,
+      "audio_end": 41.7,
+      "lag": 1.4
+    },
+    {
+      "order": 7,
+      "text": "جیسے ڈروپ آؤٹ یا ایل ٹو ڑیگلوریزیشن تیسرا ہے کہ ہم ارلی سٹوپنگ یعنی کو ٹرین یعني ٹرینگ کو",
+      "language": "ur",
+      "confidence": 0.998815,
+      "received_at": 52.7,
+      "audio_at": 50.2,
+      "audio_end": 48.7,
+      "lag": 1.4
+    },
+    {
+      "order": 8,
+      "text": "وقت سے پہلے روک دیں",
+      "language": "ur",
+      "confidence": 0.973297,
+      "received_at": 54.5,
+      "audio_at": 52.0,
+      "audio_end": 50.7,
+      "lag": 1.2
+    },
+    {
+      "order": 9,
+      "text": "अगले lecture में हम gradient descents",
+      "language": "fr",
+      "confidence": 0.416859,
+      "received_at": 56.9,
+      "audio_at": 54.4,
+      "audio_end": 53.2,
+      "lag": 1.2
+    },
+    {
+      "order": 10,
+      "text": "اور لرننگ ریٹ پر بات کریں گے کوئی سوال ہو تو",
+      "language": "ur",
+      "confidence": 0.999229,
+      "received_at": 60.1,
+      "audio_at": 57.6,
+      "audio_end": 56.2,
+      "lag": 1.4
+    },
+    {
+      "order": 11,
+      "text": "آپ لوگ پلیز ابھی پوچھ لیں",
+      "language": "ur",
+      "confidence": 0.999426,
+      "received_at": 64.8,
+      "audio_at": 58.5,
+      "audio_end": 58.3,
+      "lag": 4.1
+    }
+  ],
+  "lag": 1.4,
+  "audio_sent_sec": 58.5,
+  "server_audio_sec": 58.0,
+  "notices": [],
+  "audio": "ml_overfitting.mp4"
+}

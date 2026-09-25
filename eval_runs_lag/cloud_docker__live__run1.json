@@ -1,0 +1,70 @@
+{
+  "raw": "क्लाउड कंप्यूटिंग के अंदर डोकर और कंतीनेश के होते हैं सौफ़ए डेवलेपमेंट में एक कोमन प्रॉब्लम आती है जो डिवेलपर है उसको कि जु एपलिकेषिन है वह कंक्पीटर पर फर्फेक्ली रन कर रही हो थी ह। लेकिन जब ही कि developer उस application को server के ओपर deploy करता है तो errors आ जाते हैं इसी problem को solve कर्ताय जो है वह है docker docker जू है application के code और उनकी required dependencies को एक container के के अंदर package कर देते हैं सबसे पहले हम docker image create किरते यूजिली जो के एक docker file होती है उस image को use करके हम एंक या multiple containers गरन्द कर सकते हैं जो docker container होता है वो lightweight होた है और easily different systems पर run हो सकता cloud environment में containers को automatically scale भी किया जा सकتा ह। devops में docker के साथ kubernetes cicd pipelines github actions deployment और monitoring भी commonly use होती है",
+  "turns": [
+    {
+      "order": 0,
+      "text": "क्लाउड कंप्यूटिंग के अंदर डोकर और कंतीनेश के होते हैं सौफ़ए डेवलेपमेंट में एक कोमन प्रॉब्लम आती है जो डिवेलपर है उसको कि जु एपलिकेषिन है वह कंक्पीटर पर फर्फेक्ली रन कर रही हो थी ह। लेकिन जब ही",
+      "language": "hi",
+      "confidence": 0.999999,
+      "received_at": 21.2,
+      "audio_at": 16.9,
+      "audio_end": 15.3,
+      "lag": 1.6
+    },
+    {
+      "order": 1,
+      "text": "कि developer उस application को server के ओपर deploy करता है तो errors आ जाते हैं इसी problem को solve कर्ताय जो है वह है docker docker जू है application के code और उनकी required dependencies को एक container के",
+      "language": "en",
+      "confidence": 0.999992,
+      "received_at": 35.8,
+      "audio_at": 31.5,
+      "audio_end": 30.3,
+      "lag": 1.1
+    },
+    {
+      "order": 2,
+      "text": "के अंदर package कर देते हैं सबसे पहले हम docker image create किरते",
+      "language": "hi",
+      "confidence": 0.901807,
+      "received_at": 40.0,
+      "audio_at": 35.6,
+      "audio_end": 34.2,
+      "lag": 1.4
+    },
+    {
+      "order": 3,
+      "text": "यूजिली जो के एक docker file होती है उस image को use करके हम एंक या multiple containers गरन्द कर सकते हैं",
+      "language": "hi",
+      "confidence": 0.886141,
+      "received_at": 48.5,
+      "audio_at": 44.2,
+      "audio_end": 42.6,
+      "lag": 1.5
+    },
+    {
+      "order": 4,
+      "text": "जो docker container होता है वो lightweight होた है और easily different systems पर run हो सकता cloud environment में containers को automatically scale भी किया जा सकتा ह।",
+      "language": "en",
+      "confidence": 1.0,
+      "received_at": 59.7,
+      "audio_at": 55.3,
+      "audio_end": 52.8,
+      "lag": 2.6
+    },
+    {
+      "order": 5,
+      "text": "devops में docker के साथ kubernetes cicd pipelines github actions deployment और monitoring भी commonly use होती है",
+      "language": "en",
+      "confidence": 0.88386,
+      "received_at": 71.2,
+      "audio_at": 62.9,
+      "audio_end": 62.6,
+      "lag": 4.3
+    }
+  ],
+  "lag": 1.6,
+  "audio_sent_sec": 62.9,
+  "server_audio_sec": 63.0,
+  "notices": [],
+  "audio": "cloud_docker.mp4"
+}

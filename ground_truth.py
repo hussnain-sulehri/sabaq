@@ -13,8 +13,15 @@ Counting rules, so a second person could redo them:
   "testing". "Software Development Life Cycle" is not also "software
   development".
 - A plural counts as its singular ("processes" -> process).
-- The four new lectures are counted from their scripts. The scripts for the
-  first three were not kept, so they are counted from their transcripts,
+- The four new lectures were first counted from their scripts, then
+  recounted from what the speakers actually said, because they paraphrased:
+  "requirement ko gather karte hain" rather than "Requirement Gathering",
+  "phishing attack" three times rather than once. The recount reads the
+  batch and live transcripts together, since each drops or mishears parts
+  the other keeps. Mishearings count as what was said ("variant control" is
+  a missed "version control").
+- The scripts for the first three were not kept, so they are counted from
+  their transcripts,
   taking the fuller of batch and live. The first count used batch only and
   missed speech batch had dropped: a third "overfitting" in the AI lecture,
   and a whole sentence plus the ending of the database lecture. Both were
@@ -54,7 +61,7 @@ ALIASES: dict[str, list[str]] = {
     "email": ["e-mail"],
     "username": ["user name"],
     "company": ["companies"],
-    "requirement gathering": ["requirements gathering"],
+    "requirement": ["requirements"],
     "agile methodology": ["agile methodologies", "agile"],
     "first come first serve": [
         "first come first served", "first come, first serve", "fcfs",
@@ -132,17 +139,19 @@ LECTURES: dict[str, dict] = {
         "title": "SDLC", "subject": "Software engineering",
         "speaker": "S3", "split": "new speaker · new subject",
         "core": {
+            # Spoken "requirement ko gather karte hain", and "teen phase
+            # hote hain" in place of the script's second "Testing".
             "software engineering": 1, "software development life cycle": 1,
-            "sdlc": 1, "software development": 1, "requirement gathering": 1,
+            "sdlc": 1, "software development": 1, "requirement": 1,
             "system design": 1, "unit testing": 1, "integration testing": 1,
-            "system testing": 1, "testing": 2, "coding": 2, "developer": 3,
+            "system testing": 1, "testing": 1, "coding": 2, "developer": 3,
             "development": 1, "software": 2, "bug": 1, "test": 1,
             "agile methodology": 1, "sprint": 1, "git": 1, "branch": 1,
             "pull request": 1, "version control": 1,
         },
         "general": {
             "client": 1, "system": 1, "fix": 1, "application": 1,
-            "project": 1, "code": 1,
+            "project": 1, "code": 1, "phase": 1, "use": 1,
         },
     },
     "cloud_docker": {
@@ -157,17 +166,21 @@ LECTURES: dict[str, dict] = {
             "monitoring": 1,
         },
         "general": {
-            "application": 2, "developer": 1, "computer": 1, "code": 1,
+            "application": 3, "developer": 2, "computer": 1, "code": 1,
             "error": 1,
         },
     },
     "sec_phishing": {
         "title": "Phishing attack", "subject": "Cybersecurity",
         "speaker": "S4", "split": "new speaker · new subject",
+        # The speaker opened with "Phishing attack kya hota hai? Acha,
+        # phishing attack basically cyber security ki ek term hai", added a
+        # sentence on fake email, said "attacker se bachne" where the script
+        # has "attacks se", and did not say "cyber attack".
         "core": {
-            "cybersecurity": 2, "phishing attack": 1, "phishing": 1,
-            "cyber attack": 1, "attack": 1, "attacker": 2,
-            "sensitive information": 1, "email": 1, "account": 1,
+            "cybersecurity": 3, "phishing attack": 3, "phishing": 1,
+            "attack": 1, "attacker": 3,
+            "sensitive information": 1, "email": 2, "account": 1,
             "password": 2, "link": 1, "username": 1, "url": 1,
             "attachment": 1, "two-factor authentication": 1, "firewall": 1,
             "encryption": 1, "intrusion detection system": 1, "security": 1,
@@ -175,6 +188,7 @@ LECTURES: dict[str, dict] = {
         "general": {
             "user": 2, "important": 1, "technology": 1, "click": 1,
             "download": 1, "fake": 2, "verify": 1, "company": 2,
+            "identity": 1, "data": 1,
         },
     },
     "os_process": {

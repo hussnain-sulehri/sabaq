@@ -1,0 +1,120 @@
+{
+  "raw": "आज हम software engineering में sdlc software development life cycle क्या होता है इसको समझेंगे तोफिर डिवेल्पेंट से रिकॉर्डिंग का नाम नहीं है इस में जो है सबसे पहले हम रीकुर्यट्मेंन्ट को गैतर करते हैं then clients समझा जाते है कि वो actual system को क्या करना चाहिए उसके बाद जो है proper system design होता है फिर developers coding करता ہے اور ڈیویلپنٹ اس کے بعد سوفر کی پروپر ٹیسٹنگ کرتا ہے جس کے لئے تین فیز ہوتے ہیں unit testing integration testing or system testing अगर कोई bug मिलता है तो developer उसे fix कर देता और application को जो है दुबारा टेस्ट के लिए दे दिया जाता है modern software teams जो हैं سمٹائیمز اجائل میتھوڑالوجی فولو کرتی ہیں جہاں प्रोजेक्त को स्मॉल जो है स्पिंट्स में डिवाइद करते हैं code management के लिए developers सो हैं वो git branches और pull request औar variant control दूस करता है",
+  "turns": [
+    {
+      "order": 0,
+      "text": "आज हम software engineering में sdlc software development life cycle क्या होता है इसको समझेंगे",
+      "language": "en",
+      "confidence": 0.872426,
+      "received_at": 8.2,
+      "audio_at": 7.1,
+      "audio_end": 5.9,
+      "lag": 1.2
+    },
+    {
+      "order": 1,
+      "text": "तोफिर डिवेल्पेंट से रिकॉर्डिंग का नाम नहीं है इस में जो है सबसे पहले हम रीकुर्यट्मेंन्ट को गैतर करते हैं",
+      "language": "hi",
+      "confidence": 0.897617,
+      "received_at": 15.1,
+      "audio_at": 14.1,
+      "audio_end": 12.6,
+      "lag": 1.6
+    },
+    {
+      "order": 2,
+      "text": "then clients समझा जाते है कि वो actual system को क्या करना चाहिए उसके बाद जो है proper system design होता है फिर developers coding करता ہے",
+      "language": "en",
+      "confidence": 0.881411,
+      "received_at": 24.0,
+      "audio_at": 23.0,
+      "audio_end": 21.5,
+      "lag": 1.6
+    },
+    {
+      "order": 3,
+      "text": "اور ڈیویلپنٹ اس کے بعد سوفر کی پروپر ٹیسٹنگ کرتا ہے جس کے لئے تین فیز ہوتے ہیں",
+      "language": "ur",
+      "confidence": 0.999933,
+      "received_at": 29.2,
+      "audio_at": 28.2,
+      "audio_end": 26.9,
+      "lag": 1.3
+    },
+    {
+      "order": 4,
+      "text": "unit testing integration testing or system testing",
+      "language": "en",
+      "confidence": 0.466759,
+      "received_at": 33.2,
+      "audio_at": 32.1,
+      "audio_end": 30.6,
+      "lag": 1.6
+    },
+    {
+      "order": 5,
+      "text": "अगर कोई bug मिलता है तो developer उसे fix कर देता और application को जो है",
+      "language": "hi",
+      "confidence": 0.823705,
+      "received_at": 37.9,
+      "audio_at": 36.9,
+      "audio_end": 35.6,
+      "lag": 1.3
+    },
+    {
+      "order": 6,
+      "text": "दुबारा टेस्ट के लिए दे दिया जाता है",
+      "language": "hi",
+      "confidence": 0.662274,
+      "received_at": 40.1,
+      "audio_at": 39.1,
+      "audio_end": 37.9,
+      "lag": 1.2
+    },
+    {
+      "order": 7,
+      "text": "modern software teams जो हैं",
+      "language": "hi",
+      "confidence": 0.612198,
+      "received_at": 42.3,
+      "audio_at": 41.3,
+      "audio_end": 40.1,
+      "lag": 1.1
+    },
+    {
+      "order": 8,
+      "text": "سمٹائیمز اجائل میتھوڑالوجی فولو کرتی ہیں جہاں",
+      "language": "ur",
+      "confidence": 0.999999,
+      "received_at": 46.0,
+      "audio_at": 45.0,
+      "audio_end": 43.7,
+      "lag": 1.2
+    },
+    {
+      "order": 9,
+      "text": "प्रोजेक्त को स्मॉल जो है स्पिंट्स में डिवाइद करते हैं",
+      "language": "hi",
+      "confidence": 0.606146,
+      "received_at": 49.5,
+      "audio_at": 48.4,
+      "audio_end": 47.2,
+      "lag": 1.3
+    },
+    {
+      "order": 10,
+      "text": "code management के लिए developers सो हैं वो git branches और pull request औar variant control दूस करता है",
+      "language": "en",
+      "confidence": 0.585933,
+      "received_at": 56.5,
+      "audio_at": 54.7,
+      "audio_end": 53.7,
+      "lag": 1.7
+    }
+  ],
+  "lag": 1.3,
+  "audio_sent_sec": 54.7,
+  "server_audio_sec": 55.0,
+  "notices": [],
+  "audio": "se_sdlc.mp4"
+}

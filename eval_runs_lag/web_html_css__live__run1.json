@@ -1,0 +1,130 @@
+{
+  "raw": "اسلام علیکم سٹوڈنس آج جام ویب ڈولمنٹ کا پہلا حصہ پڑھیں گے اچ ٹی ایمل اور سی اے سس ھٹیمل کا مطلب ہے ہائپر ٹیک سمارک اپ لینگویج ये page का structure बनाती है heading के लिए हम h1 tag بیڈا گراف کے لئے پی ٹائگ اور لنک کے لیے انکر ٹیگ یوز ہوتا ہے سی ایس اس کا کام ہے سٹائلنگ کلر، فون، سائز، مارجن، پیڈنگ یہ سب css से कंट्रोल होता है margin element की byte space देता پیڈنگ اندر سپیز دیتا ہے یہ دونوں سٹوڈانس کو کنفیوز کرتے ہیں اس لئے یاد رکھیں لی آؤٹ کے لئے آج کل فلیکس بوکس اور گریڈی ہوتا ہے پرانے ٹائم میں فلوٹ یوز ہوتا تھا لیکن اب نہیں رسپانسیف ڈیزائن کے لئے ہم میڈیا کیوری لکھتے ہیں تاکہ پیج موبائل پل بھی ٹھیک نظر آئے اگلے لیکچر میں ہم جاوا سکرپٹ اور ڈوم ایونٹس پر بات کریں گے",
+  "turns": [
+    {
+      "order": 0,
+      "text": "اسلام علیکم سٹوڈنس آج جام ویب ڈولمنٹ کا پہلا حصہ پڑھیں گے اچ ٹی ایمل اور سی اے سس",
+      "language": "ur",
+      "confidence": 0.996888,
+      "received_at": 9.6,
+      "audio_at": 7.0,
+      "audio_end": 5.6,
+      "lag": 1.1
+    },
+    {
+      "order": 1,
+      "text": "ھٹیمل کا مطلب ہے ہائپر ٹیک سمارک اپ لینگویج",
+      "language": "ur",
+      "confidence": 0.999915,
+      "received_at": 12.9,
+      "audio_at": 10.3,
+      "audio_end": 9.0,
+      "lag": 1.4
+    },
+    {
+      "order": 2,
+      "text": "ये page का structure बनाती है heading के लिए हम h1 tag",
+      "language": "en",
+      "confidence": 0.595816,
+      "received_at": 17.0,
+      "audio_at": 14.4,
+      "audio_end": 13.1,
+      "lag": 1.3
+    },
+    {
+      "order": 3,
+      "text": "بیڈا گراف کے لئے پی ٹائگ اور لنک کے لیے انکر ٹیگ یوز ہوتا ہے",
+      "language": "ur",
+      "confidence": 0.999043,
+      "received_at": 21.2,
+      "audio_at": 18.6,
+      "audio_end": 17.2,
+      "lag": 1.4
+    },
+    {
+      "order": 4,
+      "text": "سی ایس اس کا کام ہے سٹائلنگ کلر، فون، سائز، مارجن، پیڈنگ یہ سب",
+      "language": "ur",
+      "confidence": 0.994706,
+      "received_at": 26.0,
+      "audio_at": 23.5,
+      "audio_end": 22.1,
+      "lag": 1.3
+    },
+    {
+      "order": 5,
+      "text": "css से कंट्रोल होता है margin element की byte space देता",
+      "language": "en",
+      "confidence": 0.217271,
+      "received_at": 30.7,
+      "audio_at": 28.2,
+      "audio_end": 26.7,
+      "lag": 1.5
+    },
+    {
+      "order": 6,
+      "text": "پیڈنگ اندر سپیز دیتا ہے یہ دونوں سٹوڈانس کو کنفیوز کرتے ہیں اس لئے",
+      "language": "ur",
+      "confidence": 0.999978,
+      "received_at": 35.2,
+      "audio_at": 32.7,
+      "audio_end": 31.3,
+      "lag": 1.4
+    },
+    {
+      "order": 7,
+      "text": "یاد رکھیں لی آؤٹ کے لئے آج کل فلیکس بوکس اور گریڈی ہوتا ہے پرانے ٹائم میں فلوٹ",
+      "language": "ur",
+      "confidence": 0.999928,
+      "received_at": 41.5,
+      "audio_at": 38.9,
+      "audio_end": 37.6,
+      "lag": 1.4
+    },
+    {
+      "order": 8,
+      "text": "یوز ہوتا تھا لیکن اب نہیں رسپانسیف ڈیزائن کے لئے ہم میڈیا کیوری",
+      "language": "ur",
+      "confidence": 1.0,
+      "received_at": 46.2,
+      "audio_at": 43.6,
+      "audio_end": 42.3,
+      "lag": 1.4
+    },
+    {
+      "order": 9,
+      "text": "لکھتے ہیں تاکہ پیج موبائل پل بھی",
+      "language": "ur",
+      "confidence": 1.0,
+      "received_at": 48.7,
+      "audio_at": 46.1,
+      "audio_end": 44.9,
+      "lag": 1.3
+    },
+    {
+      "order": 10,
+      "text": "ٹھیک نظر آئے",
+      "language": "ur",
+      "confidence": 0.999981,
+      "received_at": 50.0,
+      "audio_at": 47.4,
+      "audio_end": 46.2,
+      "lag": 1.2
+    },
+    {
+      "order": 11,
+      "text": "اگلے لیکچر میں ہم جاوا سکرپٹ اور ڈوم ایونٹس پر بات کریں گے",
+      "language": "ur",
+      "confidence": 0.999818,
+      "received_at": 57.4,
+      "audio_at": 50.8,
+      "audio_end": 50.5,
+      "lag": 4.4
+    }
+  ],
+  "lag": 1.4,
+  "audio_sent_sec": 50.8,
+  "server_audio_sec": 51.0,
+  "notices": [],
+  "audio": "web_html_css.mp4"
+}

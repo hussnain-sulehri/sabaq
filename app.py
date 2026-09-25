@@ -3,7 +3,11 @@ Sabaq - Voice Teaching Assistant
 
 Two ways in:
 
-- Upload a finished recording, transcribed in one batch request.
+- Upload a finished recording, transcribed in one batch request. The
+  language is forced to Urdu by default: left to detect it, the batch model
+  heard three of four speakers as Hindi, wrote Devanagari, kept 16% of
+  technical terms in English and dropped the densest sentences. Forced to
+  Urdu, the same audio kept 79% and lost none of them.
 - Stream live over a WebSocket, correcting each turn as it lands. Live uses
   whisper-rt, the only streaming model that supports Urdu, and it reports the
   detected language per turn, which is how the Urdu to Devanagari flip becomes
@@ -52,6 +56,7 @@ from speak import speak
 from normalizer import (
     GENERAL_TERMS, clean_transcript, has_devanagari, unknown_terms,
 )
+from subject_glossaries import SUBJECTS
 from runs import build_run, load_runs, save_run, summary_rows, term_matrix, to_csv
 from teacher import (
     GEMINI, GROQ, TERM_STYLES, active_backend, answer_question,
@@ -63,8 +68,26 @@ log = logging.getLogger("sabaq")
 
 MAX_MB = 25
 ALLOWED = ["mp3", "wav", "m4a", "mp4"]
-NOTE_KEYS = ("summary", "points", "questions", "backend", "answer")
-SUBJECTS = ["AI / ML", "Database", "Web development", "Other"]
+NOTE_KEYS = ("summary", "points", "questions", "backend", "answer", "speak_pending")
+
+# Labels for a saved run. Not the glossary list: that is SUBJECTS, imported
+# from subject_glossaries. Reusing the name here once replaced the imported
+# list, so the sidebar offered "AI / ML" and "Other" as glossaries and every
+# transcript failed with KeyError: 'AI / ML'.
+RUN_SUBJECTS = ["AI / ML", "Database", "Web development",
+                "Software engineering", "Cloud computing", "Cybersecurity",
+                "Operating systems", "Other"]
+
+# Batch language. Forced Urdu is the default because it was measured better:
+# 79% of technical terms in English on the new speakers against 16% with
+# detection, two runs per lecture, identical (README, evaluation finding 8). Detection
+# stays available because it was the evaluated default until then, and on
+# one S1 lecture it did slightly better. whisper-rt, the live path, rejects
+# a language parameter, so this choice exists only for uploads.
+BATCH_LANGUAGES = {
+    "Urdu": "ur",
+    "Detect automatically": None,
+}
 
 PROVIDER_CHOICES = {
     "Automatic": None,
@@ -150,6 +173,17 @@ if any(keys.values()):
 
 st.sidebar.divider()
 
+subjects = tuple(st.sidebar.multiselect(
+    "Subject glossaries",
+    list(SUBJECTS),
+    default=list(SUBJECTS),
+    help=(
+        "AI / ML terms are always corrected. These starter glossaries add a "
+        "few core terms per subject, each spelling observed in real "
+        "recordings, in Urdu script and Devanagari."
+    ),
+))
+
 use_fuzzy = st.sidebar.checkbox(
     "Fuzzy matching for unseen spellings",
     value=False,
@@ -169,8 +203,44 @@ term_style = st.sidebar.selectbox(
 # Transcription
 # -----------------------------
 
-def transcribe(file) -> tuple[str, int | None]:
-    """Send an uploaded file to AssemblyAI. Returns (text, duration_seconds)."""
+def remove_temp(path: str | None) -> None:
+    """
+    Delete a temporary audio file without ever failing the page.
+
+    On Windows a file another process still holds cannot be deleted
+    (WinError 32), and ffmpeg can take a moment to let go after it is
+    stopped. A failed handshake raised exactly that and took the whole page
+    down. Retry briefly, then leave the file to the system's temp cleanup.
+    """
+    if not path:
+        return
+    for _ in range(10):
+        try:
+            os.remove(path)
+            return
+        except FileNotFoundError:
+            return
+        except PermissionError:
+            time.sleep(0.2)
+    log.warning("could not delete temporary file %s; left for the system", path)
+
+
+def connection_hint(error: str) -> str:
+    """The streaming error, with what to do about the one users actually hit."""
+    if "handshake" in error.lower() or "connection failed" in error.lower():
+        return (
+            "Could not reach the streaming service in time (the connection "
+            f"handshake failed). Try again. Details: {error}"
+        )
+    return error
+
+def transcribe(file, language: str | None = "ur") -> tuple[str, int | None]:
+    """
+    Send an uploaded file to AssemblyAI. Returns (text, duration_seconds).
+
+    language is a language code to force, or None to let the API detect it.
+    The same two settings as the evaluation's batch_ur and batch paths.
+    """
     audio_path = None
 
     try:
@@ -180,7 +250,11 @@ def transcribe(file) -> tuple[str, int | None]:
             tmp.write(file.getbuffer())
             audio_path = tmp.name
 
-        config = aai.TranscriptionConfig(language_detection=True)
+        config = (
+            aai.TranscriptionConfig(language_code=language)
+            if language
+            else aai.TranscriptionConfig(language_detection=True)
+        )
         result = aai.Transcriber().transcribe(audio_path, config=config)
 
         if result.status == aai.TranscriptStatus.error:
@@ -190,8 +264,7 @@ def transcribe(file) -> tuple[str, int | None]:
         return result.text or "", result.audio_duration
 
     finally:
-        if audio_path and os.path.exists(audio_path):
-            os.remove(audio_path)
+        remove_temp(audio_path)
 
 
 # -----------------------------
@@ -224,11 +297,16 @@ def generate_notes(transcript: str) -> None:
 # Live streaming
 # -----------------------------
 
-def accept_transcript(raw: str, duration: int | None, turns: list[dict]) -> None:
+def accept_transcript(
+    raw: str, duration: int | None, turns: list[dict], path: str
+) -> None:
     """Hand a finished transcript to the rest of the app, whichever path made it."""
     st.session_state["raw"] = raw
     st.session_state["duration"] = duration
     st.session_state["turns"] = turns
+    # Batch or live. Saved with a run, since the two paths give very
+    # different results on the same audio and a comparison must say which.
+    st.session_state["path"] = path
 
     # Clear old notes so they never belong to a previous recording.
     for stale in NOTE_KEYS:
@@ -237,7 +315,7 @@ def accept_transcript(raw: str, duration: int | None, turns: list[dict]) -> None
 
 def turn_line(turn: dict) -> str:
     """One finished turn, corrected, with the language the API reported."""
-    corrected, _ = clean_transcript(turn["text"], use_fuzzy=use_fuzzy)
+    corrected, _ = clean_transcript(turn["text"], use_fuzzy=use_fuzzy, subjects=subjects)
 
     tag = ""
     if turn.get("language"):
@@ -246,6 +324,13 @@ def turn_line(turn: dict) -> str:
         tag = f"`{turn['language']}{score}` "
 
     return f"{tag}{corrected}"
+
+
+def lag_text(lag: float | None) -> str:
+    """The measured lag, or an honest 'unknown' when turns carry no timestamps."""
+    if lag is None:
+        return "lag unknown (no word timestamps)"
+    return f"median lag {lag:.1f}s"
 
 
 def run_live(chunks, source: str) -> None:
@@ -274,14 +359,14 @@ def run_live(chunks, source: str) -> None:
 
         turns, partial, error = session.snapshot()
 
-        phase = (
-            "waiting for the tail — whisper-rt runs behind the audio"
-            if session.phase == "draining"
-            else "listening"
-        )
+        phase = {
+            "draining": "audio finished, collecting the last turn",
+            "closing": "closing the session",
+            "done": "finished",
+        }.get(session.phase, "listening")
         status.caption(
             f"{source} · {WHISPER_RT} · {now - started:.0f}s · "
-            f"{len(turns)} turns · {phase} · {session.lag():.0f}s behind"
+            f"{len(turns)} turns · {phase} · {lag_text(session.lag())}"
         )
 
         lines = [turn_line(turn) for turn in turns]
@@ -290,7 +375,7 @@ def run_live(chunks, source: str) -> None:
         live_box.markdown("\n\n".join(lines) or "_Listening..._")
 
         if error:
-            status.error(error)
+            status.error(connection_hint(error))
 
     try:
         raw = session.run(chunks, on_update=draw)
@@ -302,7 +387,7 @@ def run_live(chunks, source: str) -> None:
     turns, _, error = session.snapshot()
 
     if error:
-        st.error(error)
+        st.error(connection_hint(error))
 
     # Whatever the server said about the session. Silence here means the
     # missing audio is not something it chose to warn about.
@@ -312,14 +397,25 @@ def run_live(chunks, source: str) -> None:
     for notice in getattr(session, "notices", []):
         st.warning(f"Server notice: {notice}")
 
+    # The one silent failure seen in evaluation: a session that stopped after
+    # its first turn with no error. If the server also stopped receiving
+    # audio, its own count says so.
+    unheard = session.unheard_audio_sec()
+    if unheard:
+        st.warning(
+            f"The server reports receiving {session.server_audio_sec:.0f}s of "
+            f"the {session.audio_sent():.0f}s of audio sent. The last "
+            f"{unheard:.0f}s were never heard, so the transcript ends early. "
+            "Stream it again."
+        )
+
     if not raw.strip():
         st.warning("No speech was transcribed. Check the input level and try again.")
         return
 
-    accept_transcript(raw, int(time.monotonic() - started), turns)
+    accept_transcript(raw, int(time.monotonic() - started), turns, "live")
     st.success(
-        f"Live transcript ready: {len(turns)} turns, "
-        f"last one {session.lag():.0f}s behind the audio"
+        f"Live transcript ready: {len(turns)} turns, {lag_text(session.lag())}"
     )
 
 
@@ -338,6 +434,19 @@ mode = st.radio(
 )
 
 if mode == "Upload a recording":
+    batch_choice = st.radio(
+        "Lecture language",
+        list(BATCH_LANGUAGES),
+        horizontal=True,
+        help=(
+            "Urdu is forced by default. Left to detect the language, the "
+            "speech model heard three of four test speakers as Hindi and "
+            "kept 16% of technical terms in English; forced to Urdu it kept "
+            "79% and did not drop sentences. Measured on two runs per lecture."
+        ),
+    )
+    batch_language = BATCH_LANGUAGES[batch_choice]
+
     uploaded = st.file_uploader(
         f"Upload a lecture recording (max {MAX_MB} MB)", type=ALLOWED
     )
@@ -354,13 +463,15 @@ if mode == "Upload a recording":
         if st.button("Transcribe", type="primary"):
             try:
                 with st.spinner("Transcribing. Roughly a third of the audio length."):
-                    raw, duration = transcribe(uploaded)
+                    raw, duration = transcribe(uploaded, batch_language)
 
                 if not raw:
                     st.warning("No speech detected, or transcription failed.")
                     st.stop()
 
-                accept_transcript(raw, duration, [])
+                accept_transcript(
+                    raw, duration, [], "batch_ur" if batch_language else "batch"
+                )
                 st.success("Transcript ready")
 
             except Exception:
@@ -428,8 +539,7 @@ else:
                 try:
                     run_live(file_chunks(stream_path), streamed.name)
                 finally:
-                    if os.path.exists(stream_path):
-                        os.remove(stream_path)
+                    remove_temp(stream_path)
 
 
 # -----------------------------
@@ -440,7 +550,7 @@ if "raw" in st.session_state:
     raw = st.session_state["raw"]
 
     # Recomputed every render, so the fuzzy toggle is live and free.
-    corrected, changes = clean_transcript(raw, use_fuzzy=use_fuzzy)
+    corrected, changes = clean_transcript(raw, use_fuzzy=use_fuzzy, subjects=subjects)
     leftovers = unknown_terms(corrected)
     # Technical and everyday words counted apart, so "students" and
     # "lecture" do not inflate the number that matters.
@@ -519,13 +629,15 @@ if "raw" in st.session_state:
                         "Confidence": turn.get("confidence") or "",
                         "Audio at": turn.get("audio_at", ""),
                         "Arrived": turn.get("received_at", ""),
+                        "Lag (s)": turn.get("lag") if turn.get("lag") is not None else "",
                         "Corrected": clean_transcript(
-                            turn["text"], use_fuzzy=use_fuzzy
+                            turn["text"], use_fuzzy=use_fuzzy,
+                            subjects=subjects,
                         )[0],
                     }
                     for turn in turns
                 ],
-                use_container_width=True,
+                width="stretch",
                 hide_index=True,
             )
 
@@ -543,7 +655,7 @@ if "raw" in st.session_state:
     with tab_changes:
         if changes:
             st.caption("Every spelling the normalizer replaced, and how often.")
-            st.dataframe(changes, use_container_width=True, hide_index=True)
+            st.dataframe(changes, width="stretch", hide_index=True)
         else:
             st.info("No known technical terms found in this transcript.")
 
@@ -552,12 +664,17 @@ if "raw" in st.session_state:
 
         name_col, subject_col, save_col = st.columns([2, 2, 1])
         label = name_col.text_input("Lecture name", placeholder="Overfitting")
-        subject = subject_col.selectbox("Subject", SUBJECTS)
+        subject = subject_col.selectbox("Subject", RUN_SUBJECTS)
 
         if save_col.button("Save run", disabled=not label):
             run = build_run(
                 label, subject, raw, corrected, changes,
                 st.session_state.get("duration"), leftovers,
+                settings={
+                    "path": st.session_state.get("path", ""),
+                    "glossaries": list(subjects),
+                    "fuzzy": use_fuzzy,
+                },
             )
             st.session_state.setdefault("session_runs", []).append(run)
 
@@ -576,7 +693,7 @@ if "raw" in st.session_state:
         )
 
         if leftovers:
-            st.dataframe(leftovers, use_container_width=True, hide_index=True)
+            st.dataframe(leftovers, width="stretch", hide_index=True)
             st.download_button(
                 "Download uncovered terms",
                 data="\n".join(f"{row['term']}\t{row['times']}" for row in leftovers),
@@ -602,7 +719,7 @@ if "raw" in st.session_state:
             )
         else:
             st.subheader("Per lecture")
-            st.dataframe(summary_rows(saved), use_container_width=True,
+            st.dataframe(summary_rows(saved), width="stretch",
                          hide_index=True)
             st.caption(
                 "Corrections per 100 words shows how term-heavy a lecture is. "
@@ -614,7 +731,7 @@ if "raw" in st.session_state:
                 "Blank cells on a new subject mean the glossary does not cover "
                 "that vocabulary yet."
             )
-            st.dataframe(term_matrix(saved), use_container_width=True,
+            st.dataframe(term_matrix(saved), width="stretch",
                          hide_index=True)
 
             st.download_button(
@@ -680,8 +797,18 @@ if "raw" in st.session_state:
 
             if st.button("Ask", type="primary", disabled=not (spoken or typed)):
                 question = typed.strip()
+                heard_by_voice = False
+
+                if question:
+                    # A typed question in Urdu script needs the same
+                    # correction as a spoken one, or آور فٹنگ never meets
+                    # "overfitting" in the transcript.
+                    question, _ = clean_transcript(
+                        question, use_fuzzy=use_fuzzy, subjects=subjects
+                    )
 
                 if spoken and not question:
+                    heard_by_voice = True
                     question_path = None
                     try:
                         with tempfile.NamedTemporaryFile(
@@ -696,15 +823,14 @@ if "raw" in st.session_state:
                         # The question goes through the same normalizer as the
                         # lecture. A question about آور فٹنگ and a transcript
                         # about overfitting are otherwise different words.
-                        question, _ = clean_transcript(heard, use_fuzzy=use_fuzzy)
+                        question, _ = clean_transcript(heard, use_fuzzy=use_fuzzy, subjects=subjects)
 
                     except Exception:
                         log.exception("Question transcription failed")
                         st.error("Could not transcribe the question. Try typing it.")
                         question = ""
                     finally:
-                        if question_path and os.path.exists(question_path):
-                            os.remove(question_path)
+                        remove_temp(question_path)
 
                 if question:
                     try:
@@ -724,7 +850,15 @@ if "raw" in st.session_state:
 
                     if reply.get("answer"):
                         reply["question"] = question
+                        reply["by_voice"] = heard_by_voice
+                        # The language it was written in, so a later change
+                        # in the sidebar does not read it with the wrong voice.
+                        reply["language"] = notes_language
                         st.session_state["answer"] = reply
+                        # Spoken once, when it arrives. The tab is redrawn on
+                        # every interaction, and autoplay on each redraw
+                        # would read the answer again.
+                        st.session_state["speak_pending"] = True
                     elif reply:
                         st.error("The model's reply could not be read. Ask again.")
 
@@ -732,7 +866,8 @@ if "raw" in st.session_state:
 
             if reply:
                 st.divider()
-                st.caption(f"Heard: {reply['question']}")
+                prefix = "Heard" if reply.get("by_voice") else "Asked"
+                st.caption(f"{prefix}: {reply['question']}")
 
                 if reply["in_lecture"]:
                     st.success("Answered from the lecture")
@@ -743,7 +878,11 @@ if "raw" in st.session_state:
                     )
 
                 st.write(reply["answer"])
-                speak(reply["answer"], notes_language)
+                speak(
+                    reply["answer"],
+                    reply.get("language", notes_language),
+                    autoplay=st.session_state.pop("speak_pending", False),
+                )
 
                 if reply.get("basis"):
                     with st.expander("Where this came from in the transcript"):

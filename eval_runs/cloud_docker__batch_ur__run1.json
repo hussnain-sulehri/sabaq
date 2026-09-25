@@ -1,0 +1,6 @@
+{
+  "raw": "Cloud Computing کے اندر Docker اور Containers کے ہوتے ہیں Software Development میں ایک common problem آتی ہے جو Developer ہے اس کو کہ جو Application ہے وہ Computer پر perfectly run کر رہی ہوتی ہے لیکن جب ہی Developer اس Application کو Server کے اوپر deploy کرتا ہے تو errors آ جاتے ہیں اسی پرابلم کو solve کرتا ہے جو ہے وہ ہے docker. docker جو ہے وہ application کی code اور اس کی required dependencies کو ایک container کے اندر package کر دیتا ہے. سب سے پہلے ہم docker image create کرتے ہیں. usually جو کہ ایک docker file ہوتی ہے اس image کو use کر کے ہم ایک یا multiple containers run کر سکتے ہیں. जो Docker Container होता है, वो Lightweight होता है और Easily Different Systems में Run हो सकता है। Cloud Environment में Containers को Automatically Scale भी किया जा सकता है। Modern DevOps में Docker के साथ Kubernetes, CICD Pipelines, GitHub Actions, Deployment और Monitoring भी Commonly Used होती है।",
+  "turns": [],
+  "language": "ur",
+  "audio": "cloud_docker.mp4"
+}

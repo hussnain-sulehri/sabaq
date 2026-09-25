@@ -14,9 +14,13 @@ API, for three reasons that all point the same way:
   as it is on screen.
 
 The cost is honest: voice availability depends on the listener's device, and
-a machine with no Urdu voice falls back to an English voice reading Urdu
+a machine with no Urdu voice falls back to the default voice reading Urdu
 text, which sounds wrong. The component says which voice it used, so that
 failure is visible rather than mysterious.
+
+Hindi is deliberately not a fallback for Urdu. The answer is written in
+Urdu script, which a Hindi voice cannot read, and picking one made a silent
+or garbled reading look like success.
 
 Autoplay is attempted and a button is always drawn, because most browsers
 refuse to speak until the page has been clicked at least once.
@@ -28,7 +32,7 @@ import streamlit.components.v1 as components
 
 # Browser language tags, in the order the voice picker should try them.
 VOICE_TAGS = {
-    "Urdu": ["ur-PK", "ur-IN", "ur", "hi-IN"],
+    "Urdu": ["ur-PK", "ur-IN", "ur"],
     "English": ["en-GB", "en-US", "en"],
 }
 
@@ -38,13 +42,15 @@ def speak(text: str, language: str = "Urdu", autoplay: bool = True) -> None:
     if not text:
         return
 
+    # Escaped so a reply containing "</script>" cannot close the script
+    # block it is embedded in.
     payload = json.dumps(
         {
             "text": text,
             "tags": VOICE_TAGS.get(language, VOICE_TAGS["English"]),
             "autoplay": autoplay,
         }
-    )
+    ).replace("</", "<\\/")
 
     components.html(
         f"""
@@ -97,9 +103,15 @@ def speak(text: str, language: str = "Urdu", autoplay: bool = True) -> None:
         document.getElementById("say").onclick = say;
         document.getElementById("stop").onclick = () => synth.cancel();
 
-        // Voices load asynchronously in Chrome, so the first pick can be empty.
-        synth.onvoiceschanged = () => {{ if (config.autoplay) say(); }};
-        if (config.autoplay && synth.getVoices().length) say();
+        // Voices load asynchronously in Chrome, so the first pick can be
+        // empty. Autoplay runs once, whichever of the two paths gets there
+        // first; the voice list can change more than once while loading.
+        let spoken = false;
+        function autoSay() {{
+          if (config.autoplay && !spoken) {{ spoken = true; say(); }}
+        }}
+        synth.onvoiceschanged = autoSay;
+        if (synth.getVoices().length) autoSay();
         </script>
         """,
         height=60,

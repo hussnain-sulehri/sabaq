@@ -1,0 +1,1985 @@
+{
+  "glossary": "566f8f312c1e",
+  "rows": [
+    {
+      "lecture": "cloud_docker",
+      "title": "Docker and containers",
+      "subject": "Cloud computing",
+      "speaker": "S4",
+      "split": "new speaker · new subject",
+      "path": "live",
+      "run": 1,
+      "turns": 6,
+      "languages": {
+        "hi": 3,
+        "en": 3
+      },
+      "devanagari": true,
+      "words": 161,
+      "core": {
+        "expected": 26,
+        "model": 22,
+        "glossary": 0,
+        "missed": 4,
+        "recall": 0.846
+      },
+      "general": {
+        "expected": 8,
+        "model": 5,
+        "glossary": 0,
+        "missed": 3,
+        "recall": 0.625
+      },
+      "inserted": 0,
+      "wrong": 0,
+      "precision": null,
+      "unexpected_replacements": [],
+      "missed_terms": [
+        {
+          "term": "cloud computing",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "docker",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "container",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "software development",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "application",
+          "tier": "general",
+          "missed": 1
+        },
+        {
+          "term": "developer",
+          "tier": "general",
+          "missed": 1
+        },
+        {
+          "term": "computer",
+          "tier": "general",
+          "missed": 1
+        }
+      ],
+      "uncovered": [
+        {
+          "term": "अंदर",
+          "times": 2,
+          "script": "devanagari"
+        },
+        {
+          "term": "क्लाउड",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "कंप्यूटिंग",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "डोकर",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "कंतीनेश",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "होते",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "सौफ़ए",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "डेवलेपमेंट",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "कोमन",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "प्रॉब्लम",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "आती",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "डिवेलपर",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "उसको",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "एपलिकेषिन",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "कंक्पीटर",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "फर्फेक्ली",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "रही",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "ओपर",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "जाते",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "इसी",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "कर्ताय",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "उनकी",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "सबसे",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "पहले",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "किरते",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "यूजिली",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "करके",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "एंक",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "गरन्द",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "सकते",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "सकता",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "किया",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "सकتा",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "साथ",
+          "times": 1,
+          "script": "devanagari"
+        }
+      ],
+      "corrected": "क्लाउड कंप्यूटिंग के अंदर डोकर और कंतीनेश के होते हैं सौफ़ए डेवलेपमेंट में एक कोमन प्रॉब्लम आती है जो डिवेलपर है उसको कि जु एपलिकेषिन है वह कंक्पीटर पर फर्फेक्ली रन कर रही हो थी ह। लेकिन जब ही कि developer उस application को server के ओपर deploy करता है तो errors आ जाते हैं इसी problem को solve कर्ताय जो है वह है docker docker जू है application के code और उनकी required dependencies को एक container के के अंदर package कर देते हैं सबसे पहले हम docker image create किरते यूजिली जो के एक docker file होती है उस image को use करके हम एंक या multiple containers गरन्द कर सकते हैं जो docker container होता है वो lightweight होた है और easily different systems पर run हो सकता cloud environment में containers को automatically scale भी किया जा सकتा ह। devops में docker के साथ kubernetes cicd pipelines github actions deployment और monitoring भी commonly use होती है"
+    },
+    {
+      "lecture": "db_keys",
+      "title": "Primary and foreign keys",
+      "subject": "Database",
+      "speaker": "S1",
+      "split": "same speaker · new subject",
+      "path": "live",
+      "run": 1,
+      "turns": 13,
+      "languages": {
+        "hi": 3,
+        "ur": 8,
+        "en": 2
+      },
+      "devanagari": true,
+      "words": 164,
+      "core": {
+        "expected": 34,
+        "model": 12,
+        "glossary": 0,
+        "missed": 22,
+        "recall": 0.353
+      },
+      "general": {
+        "expected": 8,
+        "model": 0,
+        "glossary": 2,
+        "missed": 6,
+        "recall": 0.25
+      },
+      "inserted": 3,
+      "wrong": 1,
+      "precision": 0.667,
+      "unexpected_replacements": [],
+      "missed_terms": [
+        {
+          "term": "database",
+          "tier": "core",
+          "missed": 2
+        },
+        {
+          "term": "primary key",
+          "tier": "core",
+          "missed": 3
+        },
+        {
+          "term": "foreign key",
+          "tier": "core",
+          "missed": 2
+        },
+        {
+          "term": "table",
+          "tier": "core",
+          "missed": 7
+        },
+        {
+          "term": "column",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "row",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "unique",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "relation",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "join",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "inner join",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "index",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "query optimization",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "student",
+          "tier": "general",
+          "missed": 2
+        },
+        {
+          "term": "concept",
+          "tier": "general",
+          "missed": 1
+        },
+        {
+          "term": "same",
+          "tier": "general",
+          "missed": 1
+        },
+        {
+          "term": "use",
+          "tier": "general",
+          "missed": 1
+        },
+        {
+          "term": "level",
+          "tier": "general",
+          "missed": 1
+        }
+      ],
+      "uncovered": [
+        {
+          "term": "ٹیبل",
+          "times": 4,
+          "script": "urdu"
+        },
+        {
+          "term": "رول",
+          "times": 2,
+          "script": "urdu"
+        },
+        {
+          "term": "دوسری",
+          "times": 2,
+          "script": "urdu"
+        },
+        {
+          "term": "असलाम",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "उलेकूं",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "डाटाबेस",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "बनियाती",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "कंसर्थ",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "पढ़ेंगे",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "प्राइम्री",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "एंड",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "फॉरन",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "دیکھیں",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "ہاں",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "کولم",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "روک",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "یونیک",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "بناتا",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "کہتے",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "پرائیمری",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "جیسے",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "میرے",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "نئی",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "ایڈی",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "ایسے",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "بیس",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "سٹوڈنٹ",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "نمبر",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "پرائمری",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "سکتا",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "کیونکہ",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "سٹودنز",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "سیم",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "افوران",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "ٹےبل",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "ریلیشن",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "بناتی",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "टेबल",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "अंदर",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "रखती",
+          "times": 1,
+          "script": "devanagari"
+        }
+      ],
+      "corrected": "असलाम उलेकूं students आज हम डाटाबेस का एक बनियाती कंसर्थ पढ़ेंगे प्राइम्री की एंड फॉरन की دیکھیں ہاں ٹیبل میں ایک کولم ہوتا ہے جو ہر روک کو یونیک بناتا ہے اس کو کہتے ہیں پرائیمری کی مثال کے طور پہ جیسے میرے پاس یہ نئی سی ایڈی ہے ایسے ہی data بیس میں سٹوڈنٹ ٹیبل میں رول نمبر پرائمری کی ہو سکتا ہے کیونکہ دو سٹودنز کا رول کبھی سیم نہیں ہوتا افوران کی کیا ہے جب ایک ٹیبل دوسری ٹےبل سے ریلیشن بناتی ہے تو وہ دوسری टेबल की primary key को अपने अंदर रखती है। उसको foreign key कहते हैं। जब हम data निकालना चाहते हैं تو دو ٹیبل سے ہم جوائن یوز کرتے ہیں انر جوئن صرف matching row देता है left join palatable की सारी row डेते है normalizations का मकसद duplicate data काम करना first normal form second normal form third normal form تین لیوز ہیں اگلے lecture میں ہم انڈیکس اور سیکیورٹی اپٹیمائزیشن پر بات کریں گے"
+    },
+    {
+      "lecture": "ml_overfitting",
+      "title": "Overfitting",
+      "subject": "AI / ML",
+      "speaker": "S1",
+      "split": "harvested",
+      "path": "live",
+      "run": 1,
+      "turns": 12,
+      "languages": {
+        "ur": 9,
+        "hi": 2,
+        "fr": 1
+      },
+      "devanagari": true,
+      "words": 158,
+      "core": {
+        "expected": 26,
+        "model": 6,
+        "glossary": 20,
+        "missed": 0,
+        "recall": 1.0
+      },
+      "general": {
+        "expected": 8,
+        "model": 3,
+        "glossary": 5,
+        "missed": 0,
+        "recall": 1.0
+      },
+      "inserted": 25,
+      "wrong": 0,
+      "precision": 1.0,
+      "unexpected_replacements": [],
+      "missed_terms": [],
+      "uncovered": [
+        {
+          "term": "اسلام",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "علیکم",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "پڑھیں",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "دیکھیں",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "اسے",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "سیکھتا",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "کبھیں",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "اتنا",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "سیکھ",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "لیتا",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "یاد",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "لیतا",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "चले",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "जाती",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "ज़ातی",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "करें",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "جیسے",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "یعني",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "پہلے",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "روک",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "دیں",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "بات",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "کریں",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "کوئی",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "سوال",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "لوگ",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "پلیز",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "ابھی",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "پوچھ",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "لیں",
+          "times": 1,
+          "script": "urdu"
+        }
+      ],
+      "corrected": "اسلام علیکم students آج ہم machine learning کا ایک بہت important topic پڑھیں گے جس کا نام ہے overfitting overfitting کیا ہے دیکھیں جب ہم ایک model کو train کرتے ہیں تو ہم اسے training data देते हैं model उस data से pattern को سیکھتا ہے pattern کو learn کرتا ہے pattern کو understand کرتے ہیں لیکن کبھی کبھیں model اتنا زیادہ سیکھ لیتا ہے کہ وہ training data کو یاد کر لیतا ہے इसको कहते हैं overfitting ऐसी सूरत में training accuracy 90  तक चले जाती है लेकिन test accuracy 60  रह ज़ातی है इsका solution हमारे पास 3 है पहला है ज्यादा data दूसरा regularization use करें جیسے dropout یا L2 regularization تیسرا ہے کہ ہم early stopping یعنی کو train یعني training کو وقت سے پہلے روک دیں अगले lecture में हम gradient descents اور learning rate پر بات کریں گے کوئی سوال ہو تو آپ لوگ پلیز ابھی پوچھ لیں"
+    },
+    {
+      "lecture": "os_process",
+      "title": "Process management",
+      "subject": "Operating systems",
+      "speaker": "S2",
+      "split": "new speaker · new subject",
+      "path": "live",
+      "run": 1,
+      "turns": 7,
+      "languages": {
+        "en": 5,
+        "hi": 2
+      },
+      "devanagari": true,
+      "words": 145,
+      "core": {
+        "expected": 29,
+        "model": 16,
+        "glossary": 0,
+        "missed": 13,
+        "recall": 0.552
+      },
+      "general": {
+        "expected": 3,
+        "model": 3,
+        "glossary": 0,
+        "missed": 0,
+        "recall": 1.0
+      },
+      "inserted": 0,
+      "wrong": 0,
+      "precision": null,
+      "unexpected_replacements": [],
+      "missed_terms": [
+        {
+          "term": "process",
+          "tier": "core",
+          "missed": 5
+        },
+        {
+          "term": "cpu scheduling",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "scheduling",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "algorithm",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "shortest job first",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "round robin",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "execution time",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "memory",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "queue",
+          "tier": "core",
+          "missed": 1
+        }
+      ],
+      "uncovered": [
+        {
+          "term": "कोई",
+          "times": 2,
+          "script": "devanagari"
+        },
+        {
+          "term": "समझेंगे",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "प्रोसेस",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "फॉम",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "मैनिज",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "टाइम",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "मल्टिबल",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "पुरसेशिस",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "मैमरी",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "अवेलेबर",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "सकते",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "डिफ्रेंट",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "पोस्य",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "थोड़ा",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "थोरा",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "एग्जीक्यूशन",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "ट्राईम",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "देता",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "पिर्षेस्स",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "स्केजूलिंग",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "स्केजुलिंग",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "डिफरेंट",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "एल्चाइब",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "अलिगोरीथम्स",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "जैसे",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "दिया",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "जता",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "अगर",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "हूँ",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "उसे",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "भेश",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "दीया",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "एंक",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "दूसरे",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "रहे",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "होتी",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "प्रसेस",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "कंटिनू",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "पाता",
+          "times": 1,
+          "script": "devanagari"
+        }
+      ],
+      "corrected": "आज हम operating system में process management को समझेंगे जब हम computer मे कोई program run करते हैं तो operating system उस training program को एक प्रोसेस की फॉम में मैनिज करता है एक टाइम पर मल्टिबल पुरसेशिस मैमरी मे अवेलेबर हो सकते हैं लेकिन cpu डिफ्रेंट पोस्य को थोड़ा -थोरा एग्जीक्यूशन ट्राईम देता है इस पिर्षेस्स को cpu स्केजूलिंग कहते हैं स्केजुलिंग की डिफरेंट एल्चाइब अलिगोरीथम्स हैं जैसे first come first serve shortest go first or round robin round ribbon में हर process को एक specific time quantum दिया जता है अगर processes की one time मे complete ना हूँ तो उसे q के end मे भेश दीया operating system का एक और important concept deadlock है deadlock तब होता है जब दो यह ज्यादा processes एंक दूसरे के resources का wait कर रहे होتी है और कोई भी प्रसेस कंटिनू नहीं कर पाता"
+    },
+    {
+      "lecture": "se_sdlc",
+      "title": "SDLC",
+      "subject": "Software engineering",
+      "speaker": "S3",
+      "split": "new speaker · new subject",
+      "path": "live",
+      "run": 1,
+      "turns": 11,
+      "languages": {
+        "en": 4,
+        "hi": 5,
+        "ur": 2
+      },
+      "devanagari": true,
+      "words": 152,
+      "core": {
+        "expected": 26,
+        "model": 16,
+        "glossary": 0,
+        "missed": 10,
+        "recall": 0.615
+      },
+      "general": {
+        "expected": 8,
+        "model": 5,
+        "glossary": 0,
+        "missed": 3,
+        "recall": 0.625
+      },
+      "inserted": 0,
+      "wrong": 0,
+      "precision": null,
+      "unexpected_replacements": [],
+      "missed_terms": [
+        {
+          "term": "software development",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "requirement",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "testing",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "coding",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "development",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "software",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "test",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "agile methodology",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "sprint",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "version control",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "project",
+          "tier": "general",
+          "missed": 1
+        },
+        {
+          "term": "phase",
+          "tier": "general",
+          "missed": 1
+        },
+        {
+          "term": "use",
+          "tier": "general",
+          "missed": 1
+        }
+      ],
+      "uncovered": [
+        {
+          "term": "समझेंगे",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "तोफिर",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "डिवेल्पेंट",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "रिकॉर्डिंग",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "सबसे",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "पहले",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "रीकुर्यट्मेंन्ट",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "गैतर",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "समझा",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "जाते",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "करना",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "चाहिए",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "उसके",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "बाद",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "ڈیویلپنٹ",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "بعد",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "سوفر",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "پروپر",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "ٹیسٹنگ",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "فیز",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "ہوتے",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "अगर",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "कोई",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "मिलता",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "उसे",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "देता",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "दुबारा",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "टेस्ट",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "दिया",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "जाता",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "سمٹائیمز",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "اجائل",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "میتھوڑالوجی",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "فولو",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "جہاں",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "प्रोजेक्त",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "स्मॉल",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "स्पिंट्स",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "डिवाइद",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "दूस",
+          "times": 1,
+          "script": "devanagari"
+        }
+      ],
+      "corrected": "आज हम software engineering में sdlc software development life cycle क्या होता है इसको समझेंगे तोफिर डिवेल्पेंट से रिकॉर्डिंग का नाम नहीं है इस में जो है सबसे पहले हम रीकुर्यट्मेंन्ट को गैतर करते हैं then clients समझा जाते है कि वो actual system को क्या करना चाहिए उसके बाद जो है proper system design होता है फिर developers coding करता ہے اور ڈیویلپنٹ اس کے بعد سوفر کی پروپر ٹیسٹنگ کرتا ہے جس کے لئے تین فیز ہوتے ہیں unit testing integration testing or system testing अगर कोई bug मिलता है तो developer उसे fix कर देता और application को जो है दुबारा टेस्ट के लिए दे दिया जाता है modern software teams जो हैं سمٹائیمز اجائل میتھوڑالوجی فولو کرتی ہیں جہاں प्रोजेक्त को स्मॉल जो है स्पिंट्स में डिवाइद करते हैं code management के लिए developers सो हैं वो git branches और pull request औar variant control दूस करता है"
+    },
+    {
+      "lecture": "sec_phishing",
+      "title": "Phishing attack",
+      "subject": "Cybersecurity",
+      "speaker": "S4",
+      "split": "new speaker · new subject",
+      "path": "live",
+      "run": 1,
+      "turns": 5,
+      "languages": {
+        "hi": 3,
+        "en": 2
+      },
+      "devanagari": true,
+      "words": 177,
+      "core": {
+        "expected": 26,
+        "model": 22,
+        "glossary": 0,
+        "missed": 4,
+        "recall": 0.846
+      },
+      "general": {
+        "expected": 13,
+        "model": 10,
+        "glossary": 0,
+        "missed": 3,
+        "recall": 0.769
+      },
+      "inserted": 0,
+      "wrong": 0,
+      "precision": null,
+      "unexpected_replacements": [],
+      "missed_terms": [
+        {
+          "term": "cybersecurity",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "phishing attack",
+          "tier": "core",
+          "missed": 3
+        },
+        {
+          "term": "user",
+          "tier": "general",
+          "missed": 1
+        },
+        {
+          "term": "technology",
+          "tier": "general",
+          "missed": 1
+        },
+        {
+          "term": "fake",
+          "tier": "general",
+          "missed": 1
+        }
+      ],
+      "uncovered": [
+        {
+          "term": "किसी",
+          "times": 2,
+          "script": "devanagari"
+        },
+        {
+          "term": "करना",
+          "times": 2,
+          "script": "devanagari"
+        },
+        {
+          "term": "करें",
+          "times": 2,
+          "script": "devanagari"
+        },
+        {
+          "term": "फिशिंग",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "एटेक",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "क्यो",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "हता",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "अच्छा",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "फुषिं",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "बेसिकली",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "साइबर",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "सेक्यूरिटी",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "तर्म",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "करने",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "औफेक",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "वगारे",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "अंदर",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "ऐसा",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "जहाँ",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "इंटिटी",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "कोपी",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "करके",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "यूजर",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "लेने",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "कुशिश",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "तोर",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "हमें",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "आती",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "जिसमे",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "लिख़्ा",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "होताई",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "आपका",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "होने",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "वाल",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "आमको",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "अपना",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "हूंगा",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "अगर",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "हमारा",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "स्टील",
+          "times": 1,
+          "script": "devanagari"
+        }
+      ],
+      "corrected": "फिशिंग एटेक क्यो हता है अच्छा फुषिं एक बेसिकली साइबर सेक्यूरिटी की एह तर्म है और phishing word जो है वो basically data steal करने औफेक email वगारे से related है cyber security के अंदर phishy attack एक ऐसा attack होता है जहाँ attacker जू है वू किसी भी trusted company या कि सी person की identity इंटिटी कोपी करके किसी भी यूजर से sensitive information लेने की कुशिश करता है मिसाल के तोर पर हमें एक fake email आती है जिसमे लिख़्ा होताई कि आपका account block होने वाल है और आमको अपना password reset करना हूंगा अगर हम उस link पर click करते हैं तो attacker जो है वो क्या करना है कि हमारा username और password स्टील कर लेता हूँ इस तरह कि attacker से हमेशा बचने के लिए url verify करें दूसरी चीज unknown attachments download ना क्रेए और two -factor authentication एनेबल करें जो companies हैं वो security के लिए firewall encryption औूर intrusion detection system use करती है cyber security में टेक्नालोजी के साथ user awareness भी बहुत important होती ہے"
+    },
+    {
+      "lecture": "web_html_css",
+      "title": "HTML and CSS",
+      "subject": "Web development",
+      "speaker": "S1",
+      "split": "same speaker · new subject",
+      "path": "live",
+      "run": 1,
+      "turns": 12,
+      "languages": {
+        "ur": 10,
+        "en": 2
+      },
+      "devanagari": true,
+      "words": 148,
+      "core": {
+        "expected": 31,
+        "model": 7,
+        "glossary": 0,
+        "missed": 24,
+        "recall": 0.226
+      },
+      "general": {
+        "expected": 9,
+        "model": 1,
+        "glossary": 2,
+        "missed": 6,
+        "recall": 0.333
+      },
+      "inserted": 2,
+      "wrong": 0,
+      "precision": 1.0,
+      "unexpected_replacements": [],
+      "missed_terms": [
+        {
+          "term": "web development",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "html",
+          "tier": "core",
+          "missed": 2
+        },
+        {
+          "term": "css",
+          "tier": "core",
+          "missed": 2
+        },
+        {
+          "term": "hyper text markup language",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "page",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "link",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "anchor tag",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "styling",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "color",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "font",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "size",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "margin",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "padding",
+          "tier": "core",
+          "missed": 2
+        },
+        {
+          "term": "layout",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "flexbox",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "grid",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "float",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "responsive design",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "media query",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "javascript",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "dom event",
+          "tier": "core",
+          "missed": 1
+        },
+        {
+          "term": "student",
+          "tier": "general",
+          "missed": 1
+        },
+        {
+          "term": "control",
+          "tier": "general",
+          "missed": 1
+        },
+        {
+          "term": "confuse",
+          "tier": "general",
+          "missed": 1
+        },
+        {
+          "term": "time",
+          "tier": "general",
+          "missed": 1
+        },
+        {
+          "term": "mobile",
+          "tier": "general",
+          "missed": 1
+        },
+        {
+          "term": "space",
+          "tier": "general",
+          "missed": 1
+        }
+      ],
+      "uncovered": [
+        {
+          "term": "یوز",
+          "times": 2,
+          "script": "urdu"
+        },
+        {
+          "term": "پیڈنگ",
+          "times": 2,
+          "script": "urdu"
+        },
+        {
+          "term": "اسلام",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "علیکم",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "جام",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "ویب",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "ڈولمنٹ",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "حصہ",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "پڑھیں",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "ایمل",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "ھٹیمل",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "مطلب",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "ہائپر",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "ٹیک",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "سمارک",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "لینگویج",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "बनाती",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "بیڈا",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "گراف",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "ٹائگ",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "لنک",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "انکر",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "ٹیگ",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "ایس",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "کام",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "سٹائلنگ",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "کلر،",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "فون،",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "سائز،",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "مارجن،",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "कंट्रोल",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "देता",
+          "times": 1,
+          "script": "devanagari"
+        },
+        {
+          "term": "اندر",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "سپیز",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "دیتا",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "دونوں",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "سٹوڈانس",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "کنفیوز",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "یاد",
+          "times": 1,
+          "script": "urdu"
+        },
+        {
+          "term": "رکھیں",
+          "times": 1,
+          "script": "urdu"
+        }
+      ],
+      "corrected": "اسلام علیکم students آج جام ویب ڈولمنٹ کا پہلا حصہ پڑھیں گے اچ ٹی ایمل اور سی اے سس ھٹیمل کا مطلب ہے ہائپر ٹیک سمارک اپ لینگویج ये page का structure बनाती है heading के लिए हम h1 tag بیڈا گراف کے لئے پی ٹائگ اور لنک کے لیے انکر ٹیگ یوز ہوتا ہے سی ایس اس کا کام ہے سٹائلنگ کلر، فون، سائز، مارجن، پیڈنگ یہ سب css से कंट्रोल होता है margin element की byte space देता پیڈنگ اندر سپیز دیتا ہے یہ دونوں سٹوڈانس کو کنفیوز کرتے ہیں اس لئے یاد رکھیں لی آؤٹ کے لئے آج کل فلیکس بوکس اور گریڈی ہوتا ہے پرانے ٹائم میں فلوٹ یوز ہوتا تھا لیکن اب نہیں رسپانسیف ڈیزائن کے لئے ہم میڈیا کیوری لکھتے ہیں تاکہ پیج موبائل پل بھی ٹھیک نظر آئے اگلے lecture میں ہم جاوا سکرپٹ اور ڈوم ایونٹس پر بات کریں گے"
+    }
+  ]
+}
