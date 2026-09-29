@@ -53,7 +53,7 @@ Teachers in Pakistan lecture in Urdu but keep technical terms in English. A real
 
 > *"Jab hum model ko train karte hain, overfitting ho sakta hai."*
 
-Speech APIs handle each language on its own. They do not handle both in one sentence. Running a one-minute AI lecture through AssemblyAI returned every English term written in Urdu script, spelled differently each time:
+In our AssemblyAI tests, code-switched English technical terms were sometimes written in Urdu or Devanagari instead of Latin script, and their spelling could be inconsistent. In one one-minute AI lecture, several English terms came back in Urdu script instead of their searchable English spelling:
 
 | Spoken term | What came back |
 |---|---|
@@ -73,16 +73,16 @@ The task is not translating terms a speech model cannot write. The model often w
 Two results carry beyond this app:
 
 - **A correction glossary is a property of the speech model, not of the language.** Changing the model invalidates part of it (finding 15).
-- **Which script the model writes depends on the speaker — unless it is told the language.** Left to detect it, the model heard one speaker as Urdu and three as Hindi, and wrote Devanagari for those three ([evaluation](#2-the-model-hears-some-speakers-as-urdu-and-others-as-hindi)). Told the language was Urdu, it wrote Urdu script for all four, and kept 79% of the new speakers' technical terms in English instead of 16% ([evaluation](#8-forcing-urdu-on-batch-fixes-three-of-the-four-new-speakers)). One API parameter did more than the whole glossary for those speakers.
+- **Which script the model writes depends on the speaker — unless the batch language is specified.** Left to detect it, the model heard one speaker as Urdu and three as Hindi, and wrote Devanagari for those three ([evaluation](#2-the-model-hears-some-speakers-as-urdu-and-others-as-hindi)). With `language_code="ur"`, it wrote Urdu script for all four, and searchable-term recall on the new speakers rose from 16% to 79% ([evaluation](#8-setting-urdu-on-batch-fixes-three-of-the-four-new-speakers)). [AssemblyAI can route manually specified languages to the best supported model for that language](https://www.assemblyai.com/docs/set-language-manually), so this is reported as a **configuration-level result**, not as proof that language detection alone caused the full gain.
 
 ## What Sabaq does
 
-Upload or stream a lecture. Uploads are transcribed with the language forced to Urdu, which the evaluation found far better than letting the model detect it. Sabaq restores technical terms to English using a glossary of spellings observed in real output, and generates study material from the corrected text.
+Upload or stream a lecture. Uploads are transcribed with `language_code="ur"` by default because that tested batch configuration performed far better on the new speakers than automatic detection. Sabaq restores technical terms to English using a glossary of spellings observed in real output, and generates study material from the corrected text.
 
 | | Feature |
 |---|---|
 | 🎙️ | **Live mode** — terms corrected turn by turn while the lecture runs, with the detected language shown per turn |
-| ❓ | **Ask the lecture by voice** — the answer is read aloud, grounded in the transcript, and labelled when the teacher did not cover it |
+| ❓ | **Ask the lecture by voice** — the answer is read aloud, constrained to the transcript, and labelled when the teacher did not cover it |
 | 🔍 | **Raw and corrected transcripts** side by side, with a table of every correction |
 | 📝 | **Summary, key points and five practice questions**, in English or Urdu |
 | 🔤 | **Three term styles** — English terms, Urdu terms, or Urdu with English in brackets |
@@ -92,8 +92,8 @@ Upload or stream a lecture. Uploads are transcribed with the language forced to 
 
 <table>
 <tr>
-<td width="50%" valign="top"><img src="screenshots/ask_answered.png" width="100%" alt="A spoken question answered from the lecture, with the transcript sentence it came from"><br/><sub>A spoken question, answered only from the lecture, with the sentence it came from.</sub></td>
-<td width="50%" valign="top"><img src="screenshots/ask_not_covered.png" width="100%" alt="A question on a topic the lecture never covered, with the warning shown"><br/><sub>A topic the teacher never covered: Sabaq says so instead of answering from general knowledge.</sub></td>
+<td width="50%" valign="top"><img src="screenshots/ask_answered.png" width="100%" alt="A spoken question answered using the lecture transcript, with the supporting transcript sentence shown"><br/><sub>A spoken question answered using the lecture transcript, with the supporting sentence shown.</sub></td>
+<td width="50%" valign="top"><img src="screenshots/ask_not_covered.png" width="100%" alt="A question on a topic the lecture never covered, with the warning shown"><br/><sub>A topic the teacher never covered: Sabaq labels it as not covered instead of presenting an answer as coming from the lecture.</sub></td>
 </tr>
 </table>
 
@@ -159,7 +159,7 @@ Full per-transcript tables are in [`results/eval_table.md`](results/eval_table.m
 
 ### 1. Streaming beats batch on unseen speakers — when batch detects the language itself
 
-On the four new lectures, the streaming model (whisper-rt) wrote **64%** of technical terms in English on its own. The batch model, left to detect the language, wrote **16%**. The one exception is the web lecture, where the two paths were close (26% batch, 23% live). Forcing Urdu on batch reverses the ranking on three of the four new lectures (finding 8).
+On the four new lectures, the streaming model (whisper-rt) wrote **64%** of technical terms in English on its own. The batch model, left to detect the language, wrote **16%**. The one exception is the web lecture, where the two paths were close (26% batch, 23% live). Setting the batch language to Urdu reverses the ranking on three of the four new lectures in this evaluation (finding 8).
 
 ### 2. The model hears some speakers as Urdu and others as Hindi
 
@@ -180,7 +180,7 @@ Batch transcribed all four new lectures **entirely in Devanagari**, from the fir
 <sub>Live mode: each turn arrives corrected, labelled with the language the model heard.</sub>
 </p>
 
-Two models, one reporting labels and one choosing a script, agree that the classification follows the speaker. This does not mean the speakers spoke Hindi: spoken Urdu and Hindi are close enough that the model cannot separate them, and something about each voice tips it one way. The consequence is practical — a glossary of Urdu-script spellings misses three of four speakers entirely. That is what the model chooses when it detects the language. Told the language is Urdu, batch writes Urdu script for all four speakers (finding 8); the live model accepts no language setting, so live mode cannot be steered this way.
+Two models, one reporting labels and one choosing a script, agree that the classification follows the speaker. This does not mean the speakers spoke Hindi: spoken Urdu and Hindi are close enough that the model cannot separate them, and something about each voice tips it one way. The consequence is practical — a glossary of Urdu-script spellings misses three of four speakers entirely. That is what the model chooses when it detects the language. With `language_code="ur"`, batch writes Urdu script for all four speakers (finding 8); the evaluated `whisper-rt` live path does not accept a `language_code` setting, so that path cannot be steered the same way.
 
 ### 3. Batch deletes the sentences with the most English terms — when it detects Hindi
 
@@ -239,9 +239,9 @@ The exception is real: one live session of the Docker lecture delivered its firs
 
 Checking outputs by eye had missed four things the scorer surfaced: batch dropping sentences, the `ڈیٹا بیس` half-term, *query* heard as *security*, and a boundary bug in the normalizer itself — Python's `\w` does not treat Devanagari vowel signs as part of a word, so the variant `डाट` matched inside `डाटाबेस` and produced `dataाबेस`. The bug was fixed with results recorded before and after (finding 16).
 
-### 8. Forcing Urdu on batch fixes three of the four new speakers
+### 8. Setting Urdu on batch fixes three of the four new speakers
 
-Every batch transcript of the three new speakers had been detected as Hindi. The same audio, with the language forced to Urdu (`language_code="ur"`), two runs each:
+Every batch transcript of the three new speakers had been detected as Hindi. The same audio, with `language_code="ur"`, two runs each:
 
 | Lecture | Speaker | Recall, detected | Recall, Urdu forced | Recall, live | Words, detected / forced / live |
 |---|---|:-:|:-:|:-:|:-:|
@@ -279,7 +279,7 @@ Tagged **[R]** for a research finding that transfers beyond this app, **[E]** fo
 
 <br/>
 
-**1. [E] Language detection works — for one speaker.** Auto-detect and forced Urdu produced identical output on S1's AI lecture, so the language selector was removed. That test predated the other speakers. For them, detection chose Hindi on all eight batch transcripts, and forcing Urdu raised batch recall from 16% to 79% (evaluation, finding 8). The selector is back, with Urdu as the default.
+**1. [E] Language detection works — for one speaker.** Auto-detect and `language_code="ur"` produced identical output on S1's AI lecture, so the language selector was removed. That test predated the other speakers. For the new speakers, detection chose Hindi on all eight batch transcripts, while the Urdu-set batch configuration raised recall from 16% to 79% (evaluation, finding 8). Because a manual language setting can also affect AssemblyAI's model routing, this is a configuration-level result. The selector is back, with Urdu as the default.
 
 **2. [R] word_boost does not help.** Passing the full technical vocabulary with `boost_param="high"` changed one word out of roughly 30 mangled terms, and changed it for the worse. Verified by marking the running build before drawing the conclusion.
 
@@ -289,7 +289,7 @@ Tagged **[R]** for a research finding that transfers beyond this app, **[E]** fo
 
 **5. [R] Full Urdu translation is worse than mixing.** Translating terms produced academic vocabulary no Pakistani CS student uses (مشین کی خودکار تعلم for machine learning, میلانِ نزول for gradient descent) and switched to Urdu numerals, which breaks search again. The technically complete option is the unusable one.
 
-**6. [E] Model availability moves.** `gemini-2.5-flash` was retired for new users during this build. Models are now found with a listing call that costs no generation quota, and the first working one from a preference list is used. `GEMINI_MODEL` pins one.
+**6. [E] Model availability moves.** Model availability can differ by key and change over time. Models are therefore discovered with a listing call that costs no generation request, and the first working one from a preference list is used. `GEMINI_MODEL` pins one when a specific model is required.
 
 **7. [R] The script the model writes depends on the speaker.** First seen as a single database lecture that flipped from Urdu script to Devanagari mid-sentence. The evaluation turned it into a measured pattern: batch wrote three new speakers entirely in Devanagari, and the live model labelled none of two speakers' turns as Urdu (evaluation, finding 2). It holds only when the model chooses the language: forced to Urdu, batch wrote Urdu script for all four speakers (evaluation, finding 8).
 
@@ -297,9 +297,9 @@ Tagged **[R]** for a research finding that transfers beyond this app, **[E]** fo
 
 **9. [R] Short tags collapse.** *Single observation.* "h1 tag" came back as `پی ای ٹیگ` ("P A tag") — digit and letter both gone.
 
-**10. [E] Two note generators, chosen for opposite reasons.** Gemini runs first because it writes better Urdu. Groq is the fallback because it is the larger floor: Gemini's free tier allows 20 generation requests a day per model, Groq's allows hundreds to thousands. Either key alone runs the app. A key that was set but unusable — the `groq` package missing from `requirements.txt` — looked like success, so the sidebar now reports each provider separately.
+**10. [E] Two note generators, chosen for opposite reasons.** Gemini runs first because it wrote better Urdu in our tests. Groq is the fallback so the app still has a second provider when the first is unavailable or rate-limited. Provider limits vary by model, account and project, so the app reacts to API responses instead of relying on one fixed quota number. Either key alone runs the app. A key that was set but unusable — the `groq` package missing from `requirements.txt` — looked like success, so the sidebar now reports each provider separately.
 
-**11. [E] Only one streaming model can hear this classroom.** `u3-rt-pro` and `universal-streaming-multilingual` cover six European languages and cannot transcribe Urdu. `whisper-rt` covers 99 languages including Urdu, detects the language itself, and reports it per turn — which is how the script behaviour in finding 7 became measurable.
+**11. [E] The published live evaluation uses `whisper-rt`.** `whisper-rt` supports 99+ languages including Urdu, detects the language itself, and reports it per turn — which is how the script behaviour in finding 7 became measurable. AssemblyAI now also lists [**Universal-3.5 Pro Realtime**](https://www.assemblyai.com/products/streaming-speech-to-text) with Urdu support. That newer model was not part of this evaluation, so every live result in this README remains specific to `whisper-rt`.
 
 **12. [E] A grounded answer has to say when it is not grounded.** The question path returns `in_lecture` and the transcript span the answer rests on. The student's question runs through the normalizer first, so a question transcribed as آور فٹنگ still finds a transcript corrected to *overfitting*.
 
@@ -476,6 +476,9 @@ GROQ_API_KEY = "your_groq_key"
 
 `config.py` reads Streamlit secrets first, then the environment, so the same code runs in both places.
 
+> [!IMPORTANT]
+> **Private GitHub repositories.** [Streamlit Community Cloud can deploy from a private repository](https://docs.streamlit.io/deploy/streamlit-community-cloud/get-started/connect-your-github-account), but the Streamlit GitHub connection must be authorized for private-repository access and the deploying account must have admin access to the repository. An app deployed from a private repository is private by default, although its visibility can be changed in the app's **Sharing** settings. For the AssemblyAI Voice Agent Hackathon, lablab.ai requires a **public GitHub repository**, so the repo can stay private during development but must be made public for submission.
+
 ---
 
 ## Files
@@ -525,20 +528,22 @@ Python · Streamlit · AssemblyAI Speech-to-Text (batch and streaming) · Google
 
 **Pre-emptive guards.** ترین is not replaced after words such as اہم, where it is the superlative suffix, and فیصد was removed as a native Urdu word. Neither was observed failing.
 
-**Biasing.** Only `word_boost` was tested. Newer keyterm biasing, if available for Urdu, was not.
+**Biasing.** The published evaluation tested `word_boost`, which did not help on the original AI lecture. AssemblyAI now documents [keyterms prompting for Universal-2](https://www.assemblyai.com/docs/getting-started/models), the broad-language batch model used for languages such as Urdu, so a direct Urdu keyterms-vs-glossary comparison is still missing.
 
 **Streaming reliability.** 8 of 36 streaming connection attempts from the development network timed out at the handshake; none of 25 batch requests failed. One connected session stopped delivering after its first turn without an error. The app now compares the audio the server reports receiving with the audio sent, so a session that stops being heard is reported; one that is heard in full but returns too little text would not be. In the lag runs the server's count matched the audio sent to within half a second in 6 of 7 sessions; in the seventh, the phishing lecture, its Termination message did not arrive, so the check could not run. The same lecture missed it again in the app. The handshake and termination limits were raised after these runs and have not been re-measured.
 
-**Quotas.** Gemini's free tier allows 20 generation requests per day per model; notes use one. Quota errors move to the next model rather than retrying, and fall through to Groq. Streaming is billed on how long the socket stays open, so every path terminates it in a `finally` block.
+**Quotas.** Gemini and Groq rate limits vary by model, account and project. The app treats quota/rate-limit responses as runtime conditions: it moves to the next usable model or provider and honours retry information when available. Streaming is billed on how long the socket stays open, so every path terminates it in a `finally` block.
 
 **Voices.** Spoken answers depend on the listener's device having a voice for the language.
 
-**Latency.** `whisper-rt` is the slowest of the three streaming models; the fast ones do not support Urdu. Live text trails the teacher by a median 1.4 s, with the last turn about 4 s after the audio ends (finding 19).
+**Latency.** The measured latency here is for the evaluated `whisper-rt` path: live text trails the teacher by a median 1.4 s, with the last turn about 4 s after the audio ends (finding 19). AssemblyAI now also supports Urdu in Universal-3.5 Pro Realtime, but Sabaq has not benchmarked that model yet.
 
 ## Next
 
-- **Find out when live beats forced-Urdu batch.** Forced Urdu wins on three of four new lectures; live wins on phishing (85% against 42%) and on S1's database lecture. Which to trust for a new voice is still open.
-- **Grow the starter glossaries into full subject glossaries** from more speakers, harvested from forced-Urdu output, which is Urdu script, and evaluate each on a held-out lecture.
+- **Find out when the evaluated live path beats batch with `language_code="ur"`.** The Urdu-set batch configuration wins on three of four new lectures; live wins on phishing (85% against 42%) and on S1's database lecture. Which to trust for a new voice is still open.
+- **Benchmark [Universal-3.5 Pro Realtime](https://www.assemblyai.com/products/streaming-speech-to-text) on the same audio.** It now supports Urdu, but it was not part of the published evaluation.
+- **Compare Universal-2 keyterms prompting with the glossary.** The published evaluation tested `word_boost`; current [AssemblyAI model documentation](https://www.assemblyai.com/docs/getting-started/models) lists keyterms prompting for Universal-2.
+- **Grow the starter glossaries into full subject glossaries** from more speakers, harvested from Urdu-set batch output, and evaluate each on a held-out lecture.
 - **A words-per-second check on live transcripts,** for the truncation the audio-received warning cannot see.
 - **A glossary that learns** from approved corrections instead of being written by hand.
 - **A second speech vendor and a word error rate benchmark.**
@@ -548,27 +553,27 @@ Python · Streamlit · AssemblyAI Speech-to-Text (batch and streaming) · Google
 ## Questions we expect
 
 **Why did you use Whisper?**
-`whisper-rt` is one of AssemblyAI's own streaming models, used through the AssemblyAI Streaming API. It is the only AssemblyAI streaming model that understands Urdu; the other two cover six European languages. It also reports the language of every turn, which is how the Urdu-versus-Hindi finding was measured. Uploads use AssemblyAI batch transcription with the language forced to Urdu.
+The published live evaluation uses AssemblyAI's `whisper-rt`, which supports 99+ languages including Urdu and reports the language of every turn; that is how the Urdu-versus-Hindi finding was measured. AssemblyAI now also lists Universal-3.5 Pro Realtime with Urdu support, but it was not part of this evaluation. Uploads use AssemblyAI batch transcription with `language_code="ur"` by default.
 
 **Why not use Gemini to transcribe or fix the transcript?**
-Gemini writes the notes and answers questions. Correction is done by the glossary because every replacement is deterministic, shown in the Corrections table, and measurable. It is also instant for each live turn, and it costs none of Gemini's free-tier allowance of about 20 requests a day. Correction by a language model has not been tested, and comparing it is a fair next step.
+Gemini writes the notes and answers questions. Correction is done by the glossary because every replacement is deterministic, shown in the Corrections table, and measurable. It is also instant for each live turn and requires no extra generation request. Correction by a language model has not been tested, and comparing it is a fair next step.
 
 **Why not a translation API?**
 The teacher already says the term in English; the task is to keep it, not translate anything. Translating terms into Urdu made things worse: academic words no student uses, and Urdu numerals that broke search (build finding 5). A translation API was not tested directly.
 
 **Why not tell the speech model the technical terms in advance?**
-AssemblyAI's `word_boost` was tested with the full vocabulary. It changed one word out of about thirty, for the worse (build finding 2). Newer keyterm biasing has not been tested.
+AssemblyAI's `word_boost` was tested with the full vocabulary. It changed one word out of about thirty, for the worse (build finding 2). Current [AssemblyAI model documentation](https://www.assemblyai.com/docs/getting-started/models) lists keyterms prompting for Universal-2, so testing Urdu keyterms directly against the glossary is still an open comparison.
 
 **The glossary is built by hand. Does it scale?**
 It grows from measurement, not guesses: the Not covered report lists every word left uncorrected. Spellings belong to the speech model that produced them (build finding 15), so a new model needs a new harvest. A glossary that learns from corrections teachers approve is the next step.
 
 **Seven lectures is small.**
-Yes. Every result is bounded by seven one-minute scripted lectures, four speakers and one speech vendor ([Limits](#limits)). The forced-Urdu result held identically across two runs. Real classroom recordings and more speakers are the next test.
+Yes. Every result is bounded by seven one-minute scripted lectures, four speakers and one speech vendor ([Limits](#limits)). The `language_code="ur"` batch result held identically across two runs. Real classroom recordings and more speakers are the next test.
 
 ---
 
 <div align="center">
-<sub>Model names, free-tier quotas and streaming language coverage were checked against provider documentation in September 2026 and change often.</sub>
+<sub>Provider models, rate limits and language support change over time. This README distinguishes the models used in the published evaluation from newer provider capabilities available afterward.</sub>
 <br/>
 <sub>Built for the <a href="https://lablab.ai/ai-hackathons/assemblyai-voice-agent-hackathon">AssemblyAI Voice Agent Hackathon</a> on lablab.ai · September 2026</sub>
 </div>
