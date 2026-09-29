@@ -8,10 +8,11 @@ Two ways in:
   heard three of four speakers as Hindi, wrote Devanagari, kept 16% of
   technical terms in English and dropped the densest sentences. Forced to
   Urdu, the same audio kept 79% and lost none of them.
-- Stream live over a WebSocket, correcting each turn as it lands. Live uses
-  whisper-rt, the only streaming model that supports Urdu, and it reports the
-  detected language per turn, which is how the Urdu to Devanagari flip becomes
-  visible while it is happening instead of afterwards.
+- Stream over a WebSocket, correcting each turn as it lands. The published
+  evaluation uses whisper-rt, which reports the detected language per turn.
+  In the deployed app, the browser microphone records a 16 kHz WAV first and
+  then feeds that recording through the same streaming path; a direct hardware
+  microphone remains available when Sabaq is run locally.
 
 Either way you get:
 
@@ -481,36 +482,83 @@ if mode == "Upload a recording":
                 st.error("Transcription failed. Try again.")
 
 else:
+    # A direct Python/sounddevice microphone reads the machine running the
+    # Streamlit server. That works locally, but Streamlit Community Cloud has
+    # no physical input device. st.audio_input, by contrast, records from the
+    # visitor's browser microphone and therefore works in the deployed app.
     mic_ok, mic_reason = microphone_available()
 
-    sources = ["Play a file through the stream"]
-    if mic_ok:
-        sources.insert(0, "Microphone")
-
     st.caption(
-        f"Streaming model: `{WHISPER_RT}`. The other two streaming models cover "
-        "six European languages and cannot hear Urdu at all. Language is "
-        "detected per turn, so a switch mid-lecture is labelled as it happens."
+        f"Streaming model: `{WHISPER_RT}`. This is the streaming model used for "
+        "Sabaq's published evaluation. Language is detected per turn, so a "
+        "switch mid-lecture is labelled as it happens."
     )
+
+    sources = [
+        "Browser microphone (record, then stream)",
+        "Play a file through the stream",
+    ]
+    if mic_ok:
+        sources.insert(1, "Direct microphone (local only)")
 
     source = st.radio("Audio source", sources, horizontal=True)
 
     if not mic_ok:
-        st.info(f"Microphone unavailable here: {mic_reason}. Streaming a file instead.")
+        st.caption(
+            "Browser microphone works in the hosted app. A direct hardware "
+            "microphone is shown only when Sabaq runs on a machine with an "
+            "input device."
+        )
+        if mic_reason:
+            log.info("direct microphone unavailable: %s", mic_reason)
 
-    if source == "Microphone":
+    if source == "Browser microphone (record, then stream)":
+        st.caption(
+            "Record in the browser, then Sabaq sends the 16 kHz WAV through "
+            "the same AssemblyAI streaming path used by the live evaluation. "
+            "The transcript still arrives turn by turn while the recording is "
+            "replayed at real speed."
+        )
+
+        browser_recording = st.audio_input(
+            "Record a lecture",
+            sample_rate=16_000,
+            key="live_browser_audio",
+        )
+
+        if browser_recording:
+            st.audio(browser_recording)
+
+            if st.button("Stream browser recording", type="primary"):
+                browser_path = None
+                try:
+                    with tempfile.NamedTemporaryFile(
+                        delete=False, suffix=".wav"
+                    ) as tmp:
+                        tmp.write(browser_recording.getbuffer())
+                        browser_path = tmp.name
+
+                    run_live(
+                        file_chunks(browser_path),
+                        "browser microphone",
+                    )
+                finally:
+                    remove_temp(browser_path)
+
+    elif source == "Direct microphone (local only)":
         seconds = st.slider("Listen for (seconds)", 15, 300, 60, step=15)
         st.caption(
-            "Capped on purpose. Streaming is billed on how long the socket "
-            "stays open, and an abandoned session bills for three hours."
+            "This is true direct microphone streaming from the machine running "
+            "Python. It is available locally when an input device is present."
         )
 
         if st.button("Start listening", type="primary"):
-            run_live(microphone_chunks(seconds), "microphone")
+            run_live(microphone_chunks(seconds), "direct microphone")
 
     else:
         streamed = st.file_uploader(
-            "Recording to play through the live stream", type=ALLOWED,
+            "Recording to play through the live stream",
+            type=ALLOWED,
             key="stream_upload",
         )
 

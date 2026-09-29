@@ -5,13 +5,11 @@ The batch path sends a finished file and waits. This path opens a WebSocket
 and corrects each turn as it lands, which is what a classroom actually needs:
 the term is on screen in English while the teacher is still talking about it.
 
-Model choice is forced by the language, not by preference:
-
-- u3-rt-pro and universal-streaming-multilingual cover English, Spanish,
-  German, French, Portuguese and Italian. Neither can hear an Urdu classroom.
-- whisper-rt covers 99 languages including Urdu, detects the language itself,
-  and rejects a language parameter. It is the only streaming model that works
-  here, and it is slower than the other two. That trade is not optional.
+The published Sabaq evaluation uses whisper-rt because that was the Urdu-capable
+streaming path tested during the experiment. AssemblyAI now also offers newer
+realtime models with Urdu support, so the code keeps whisper-rt for evaluation
+consistency rather than claiming it is the only possible Urdu streaming model.
+whisper-rt detects the language itself and reports a language per turn.
 
 Turn events carry language_code and language_confidence per turn, which is
 the part that matters beyond eligibility. The Devanagari flip in the database
@@ -69,7 +67,7 @@ BYTES_PER_SAMPLE = 2
 CHUNK_MS = 100
 CHUNK_BYTES = SAMPLE_RATE * BYTES_PER_SAMPLE * CHUNK_MS // 1000
 
-# The only streaming model that supports Urdu.
+# Streaming model used by the published Sabaq evaluation.
 WHISPER_RT = "whisper-rt"
 
 # How long to keep listening after the audio stops, before sending Terminate.
@@ -141,8 +139,10 @@ def microphone_available() -> tuple[bool, str]:
     """
     Whether a microphone can be opened here, and why not when it cannot.
 
-    Streamlit Cloud has no audio device, so the deployed app can only stream
-    a file. Saying which of the two is missing saves a support round trip.
+    This checks only for a direct hardware microphone on the machine running
+    Python. Streamlit Community Cloud has no such input device. The deployed
+    app uses Streamlit's browser microphone widget instead, then feeds the
+    recorded WAV through this same streaming path.
     """
     try:
         import sounddevice  # noqa: F401
